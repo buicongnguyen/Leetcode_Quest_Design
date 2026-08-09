@@ -188,6 +188,8 @@ dialog::backdrop { background: rgba(2, 8, 15, .78); backdrop-filter: blur(5px); 
 .dialog-checkpoint { grid-column: 1 / -1; }
 .dialog-actions { display: flex; gap: .6rem; flex-wrap: wrap; align-items: center; }
 .dialog-actions a, .complete-button { border: 1px solid var(--line); border-radius: .5rem; padding: .7rem .9rem; text-decoration: none; background: transparent; color: var(--text); cursor: pointer; font: 500 .65rem DM Mono, monospace; }
+.dialog-actions a.dialog-reader-action { border-color: color-mix(in srgb, var(--accent) 45%, var(--line)); color: var(--accent); }
+.dialog-actions a.dialog-reader-action.solution { border-color: color-mix(in srgb, var(--warn) 45%, var(--line)); color: var(--warn); }
 .complete-button { background: var(--accent); color: #06151a; border-color: var(--accent); }
 .search-dialog { padding: 0; align-self: start; margin-top: 12vh; }
 .search-box { min-height: 64px; padding: 0 1rem; display: flex; align-items: center; gap: .8rem; border-bottom: 1px solid var(--line); }

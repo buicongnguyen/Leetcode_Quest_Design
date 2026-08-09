@@ -13,7 +13,7 @@ Edit `data/quests.json`. Each quest needs:
 - the primary data-structure or state-management pattern;
 - a review question that tests an invariant or tradeoff.
 
-Do not copy a problem statement, example, editorial, company tag, or solution from LeetCode. Link to the canonical page instead.
+Do not copy a problem statement, example, editorial, company tag, or solution from LeetCode. Link to the canonical page instead. Original explanations, traces, diagrams, and implementations belong in the matching module under `data/solutions/` and must use the exact LeetCode class/method interface.
 
 ## Choose the right level
 
@@ -30,4 +30,4 @@ npm run check
 npm run build
 ```
 
-The checks reject duplicate IDs/slugs, invalid difficulties, missing learning fields, and broken core UI contracts.
+The checks reject duplicate IDs/slugs, incomplete thinking or solution coverage, invalid difficulties, missing editorial fields, malformed diagrams, undersized code submissions, and broken core UI contracts.

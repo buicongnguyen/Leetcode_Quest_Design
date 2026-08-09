@@ -37,9 +37,10 @@ Every level repeats the same design method: identify the authoritative state, wr
 - An English atlas at `/en/` and a full nested book reader at `/en/learn/`.
 - One generated reader page for every level and every quest, with a persistent chapter tree.
 - A problem-specific **Flow of Thinking** child page for every quest, deriving the solution from input operations, bottlenecks, data-structure decisions, combined architecture, and complexity proof.
+- An original **Editorial Solution** child page for every quest, with input/output analysis, an example trace, data-structure diagram, complexity graph, pseudocode, proof, and complete Python3/C++ tabs.
 - Difficulty and Premium filters.
 - Search by problem, level, or design pattern.
-- Detailed design goals and review checkpoints without reproducing LeetCode problem statements.
+- Detailed design goals and review checkpoints without reproducing LeetCode problem statements or editorials.
 - Local progress saved in the browser.
 - Responsive light/dark interface.
 - Automated static checks and GitHub Pages deployment.
@@ -61,7 +62,7 @@ Push the repository to GitHub with `main` as the default branch, then select **G
 
 ## Content policy
 
-This project contains original summaries, learning goals, and structural guidance. It links to LeetCode for the actual problem statements and does not republish them. Some linked problems require LeetCode Premium. LeetCode is a trademark of LeetCode LLC; this independent project is not affiliated with or endorsed by LeetCode.
+This project contains original summaries, learning goals, explanations, diagrams, examples, and implementations. It links to LeetCode for the actual problem statements and does not republish them or LeetCode's editorials. Some linked problems require LeetCode Premium. LeetCode is a trademark of LeetCode LLC; this independent project is not affiliated with or endorsed by LeetCode.
 
 ## Contributing
 

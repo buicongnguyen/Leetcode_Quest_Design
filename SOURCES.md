@@ -22,4 +22,4 @@ Representative source pages used to verify the five families:
 - [Design Movie Rental System](https://leetcode.com/problems/design-movie-rental-system/)
 - [Design Spreadsheet](https://leetcode.com/problems/design-spreadsheet/)
 
-Problem descriptions are intentionally not mirrored. Titles, numeric IDs, slugs, public difficulty labels, and Premium availability are catalog metadata; all learning summaries and checkpoints in this repository are original.
+Problem descriptions and official editorials are intentionally not mirrored. Titles, numeric IDs, slugs, public difficulty labels, Premium availability, and public class/method signatures are catalog metadata; all learning summaries, examples, traces, diagrams, explanations, and implementations in this repository are independently written.

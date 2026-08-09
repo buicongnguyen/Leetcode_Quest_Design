@@ -139,6 +139,9 @@ function openQuest(id) {
   document.querySelector("#dialog-goal").textContent = quest.goal;
   document.querySelector("#dialog-pattern").textContent = quest.pattern;
   document.querySelector("#dialog-checkpoint").textContent = quest.checkpoint;
+  document.querySelector("#dialog-overview").href = `learn/${quest.slug}.html`;
+  document.querySelector("#dialog-thinking").href = `learn/${quest.slug}-thinking.html`;
+  document.querySelector("#dialog-solution").href = `learn/${quest.slug}-solution.html`;
   document.querySelector("#dialog-global").href = urls.global;
   document.querySelector("#dialog-china").href = urls.china;
   syncCompleteButton();

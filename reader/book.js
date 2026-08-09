@@ -1,5 +1,6 @@
 const THEME_KEY = "leetcode-design-quest-theme";
 const SIDEBAR_SCROLL_KEY = "leetcode-design-reader-sidebar-scroll";
+const CODE_LANGUAGE_KEY = "leetcode-design-reader-code-language";
 const menu = document.querySelector("#reader-menu");
 const readerSidebar = document.querySelector("#reader-sidebar");
 const searchDialog = document.querySelector("#reader-search");
@@ -60,6 +61,54 @@ function buildOutline() {
   headings.forEach(heading => observer.observe(heading));
 }
 
+function activateCodeLanguage(group, language, moveFocus = false) {
+  const tabs = [...group.querySelectorAll('[role="tab"]')];
+  const panels = [...group.querySelectorAll('[role="tabpanel"]')];
+  const selected = tabs.find(tab => tab.dataset.codeLanguage === language) || tabs[0];
+  if (!selected) return;
+  tabs.forEach(tab => {
+    const active = tab === selected;
+    tab.setAttribute("aria-selected", String(active));
+    tab.tabIndex = active ? 0 : -1;
+  });
+  panels.forEach(panel => { panel.hidden = panel.dataset.codePanel !== selected.dataset.codeLanguage; });
+  localStorage.setItem(CODE_LANGUAGE_KEY, selected.dataset.codeLanguage);
+  if (moveFocus) selected.focus();
+}
+
+function setupCodeWorkbenches() {
+  const savedLanguage = localStorage.getItem(CODE_LANGUAGE_KEY) || "python";
+  document.querySelectorAll("[data-code-tabs]").forEach(group => {
+    const tabs = [...group.querySelectorAll('[role="tab"]')];
+    activateCodeLanguage(group, savedLanguage);
+    tabs.forEach((tab, index) => {
+      tab.addEventListener("click", () => activateCodeLanguage(group, tab.dataset.codeLanguage));
+      tab.addEventListener("keydown", event => {
+        let nextIndex = null;
+        if (event.key === "ArrowRight") nextIndex = (index + 1) % tabs.length;
+        if (event.key === "ArrowLeft") nextIndex = (index - 1 + tabs.length) % tabs.length;
+        if (event.key === "Home") nextIndex = 0;
+        if (event.key === "End") nextIndex = tabs.length - 1;
+        if (nextIndex === null) return;
+        event.preventDefault();
+        activateCodeLanguage(group, tabs[nextIndex].dataset.codeLanguage, true);
+      });
+    });
+    group.querySelector("[data-copy-code]")?.addEventListener("click", async event => {
+      const button = event.currentTarget;
+      const activeCode = group.querySelector('[role="tabpanel"]:not([hidden]) code');
+      if (!activeCode) return;
+      try {
+        await navigator.clipboard.writeText(activeCode.textContent);
+        button.textContent = "Copied";
+        setTimeout(() => { button.textContent = "Copy code"; }, 1400);
+      } catch {
+        button.textContent = "Select and copy";
+      }
+    });
+  });
+}
+
 function renderSearch(query) {
   const value = query.trim().toLowerCase();
   const matches = searchIndex.filter(item => !value || `${item.title} ${item.section} ${item.text}`.toLowerCase().includes(value)).slice(0, 12);
@@ -96,4 +145,5 @@ document.addEventListener("keydown", event => {
 
 buildOutline();
 restoreSidebarPosition();
+setupCodeWorkbenches();
 setTheme(localStorage.getItem(THEME_KEY) || (matchMedia("(prefers-color-scheme: light)").matches ? "light" : "dark"));
