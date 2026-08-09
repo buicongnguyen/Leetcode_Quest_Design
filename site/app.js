@@ -58,6 +58,20 @@ function renderRoutePreview() {
     </div>`).join("");
 }
 
+function renderAtlasTree() {
+  const tree = document.querySelector("#atlas-tree");
+  tree.insertAdjacentHTML("beforeend", state.data.levels.map(level => `
+    <a href="#${level.id}">
+      <span>0${level.number}</span>
+      <strong>${level.shortTitle}</strong>
+      <small>${level.questions.length}</small>
+    </a>`).join(""));
+  const links = [...tree.querySelectorAll("a")];
+  links.forEach(link => link.addEventListener("click", () => {
+    links.forEach(item => item.classList.toggle("active", item === link));
+  }));
+}
+
 function renderLevels() {
   const visibleLevels = state.data.levels.map(level => ({
     ...level,
@@ -68,7 +82,7 @@ function renderLevels() {
   })).filter(level => level.questions.length);
 
   elements.levels.innerHTML = visibleLevels.map((level, index) => `
-    <article class="level ${index === 0 ? "open" : ""}" data-level="${level.id}">
+    <article class="level ${index === 0 ? "open" : ""}" id="${level.id}" data-level="${level.id}">
       <button class="level-header" type="button" aria-expanded="${index === 0}" aria-controls="body-${level.id}">
         <span class="level-number">L0${level.number}</span>
         <span class="level-heading"><h3>${level.title}</h3><p>${level.eyebrow}</p></span>
@@ -217,6 +231,7 @@ async function init() {
   document.querySelector("#stat-levels").textContent = state.data.levels.length;
   document.querySelector("#stat-quests").textContent = total;
   renderRoutePreview();
+  renderAtlasTree();
   renderLevels();
   updateProgress();
   bindStaticEvents();

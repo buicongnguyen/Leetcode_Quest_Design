@@ -51,7 +51,7 @@ a { color: inherit; }
 .ambient-a { background: var(--accent); right: -10rem; top: 7rem; }
 .ambient-b { background: #4774ff; left: -16rem; top: 42rem; }
 
-.topbar { width: min(1240px, calc(100% - 40px)); margin: 0 auto; min-height: 82px; display: flex; align-items: center; justify-content: space-between; border-bottom: 1px solid var(--line); }
+.topbar { width: 100%; margin: 0; min-height: 82px; padding: 0 22px; display: flex; align-items: center; justify-content: space-between; border-bottom: 1px solid var(--line); }
 .brand { display: inline-flex; align-items: center; gap: .75rem; text-decoration: none; font: 500 .77rem DM Mono, monospace; letter-spacing: .13em; }
 .brand-mark { width: 36px; height: 36px; display: inline-grid; place-items: center; border: 1px solid var(--line-hot); color: var(--accent); background: color-mix(in srgb, var(--accent) 8%, transparent); font: 500 .76rem DM Mono, monospace; clip-path: polygon(12% 0, 100% 0, 100% 72%, 72% 100%, 0 100%, 0 12%); }
 .top-actions { display: flex; align-items: center; gap: .55rem; }
@@ -60,7 +60,20 @@ a { color: inherit; }
 .github-button { padding: .65rem 1rem; text-decoration: none; font: 500 .72rem DM Mono, monospace; letter-spacing: .08em; }
 .icon-button:hover, .github-button:hover { border-color: var(--line-hot); color: var(--accent); }
 
-main { overflow: hidden; }
+.atlas-shell { display: grid; grid-template-columns: 252px minmax(0, 1fr); align-items: start; }
+.atlas-sidebar { position: sticky; top: 0; height: 100vh; padding: 2rem 1rem; overflow: auto; background: var(--bg-soft); border-right: 1px solid var(--line); }
+.atlas-sidebar-label { margin: 0 .65rem 1rem; color: var(--muted); font: 500 .58rem DM Mono, monospace; letter-spacing: .14em; }
+.atlas-tree { display: grid; gap: .3rem; }
+.atlas-tree a { display: grid; grid-template-columns: 28px 1fr auto; gap: .55rem; align-items: center; min-height: 42px; padding: .55rem .65rem; border-radius: .4rem; color: var(--muted); text-decoration: none; }
+.atlas-tree a:hover, .atlas-tree a.active { color: var(--text); background: color-mix(in srgb, var(--accent) 8%, transparent); box-shadow: inset 2px 0 var(--accent); }
+.atlas-tree span, .atlas-tree small { color: var(--accent); font: 500 .58rem DM Mono, monospace; }
+.atlas-tree strong { font-size: .72rem; font-weight: 600; }
+.atlas-tree small { color: var(--muted); }
+.atlas-reader-link { display: grid; gap: .45rem; margin-top: 1.5rem; padding: 1rem .75rem; border-top: 1px solid var(--line); text-decoration: none; }
+.atlas-reader-link span { color: var(--accent); font: 500 .56rem DM Mono, monospace; letter-spacing: .1em; }
+.atlas-reader-link strong { font-size: .72rem; }
+.atlas-reader-link:hover strong { color: var(--accent); }
+main { min-width: 0; overflow: hidden; }
 .hero { min-height: 700px; width: min(1180px, calc(100% - 40px)); margin: 0 auto; padding: 86px 0 100px; display: grid; grid-template-columns: 1.05fr .95fr; align-items: center; gap: 8vw; }
 .kicker, .section-label { margin: 0 0 1.25rem; color: var(--accent); font: 500 .7rem DM Mono, monospace; letter-spacing: .16em; }
 .kicker span { display: inline-block; width: 30px; height: 1px; margin: 0 .65rem .22rem 0; background: var(--accent); }
@@ -188,6 +201,12 @@ kbd { border: 1px solid var(--line); border-radius: .3rem; color: var(--muted); 
 .search-empty { color: var(--muted); padding: 2rem; text-align: center; }
 
 @media (max-width: 900px) {
+  .atlas-shell { display: block; }
+  .atlas-sidebar { position: sticky; top: 0; z-index: 12; width: 100%; height: auto; padding: .55rem 14px; border-right: 0; border-bottom: 1px solid var(--line); overflow-x: auto; }
+  .atlas-sidebar-label, .atlas-reader-link { display: none; }
+  .atlas-tree { display: flex; width: max-content; }
+  .atlas-tree a { grid-template-columns: auto auto; min-height: 36px; white-space: nowrap; }
+  .atlas-tree a small { display: none; }
   .hero { grid-template-columns: 1fr; padding-top: 70px; }
   .hero-console { justify-self: stretch; width: 100%; transform: none; }
   .loop-grid { grid-template-columns: repeat(2, 1fr); }

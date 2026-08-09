@@ -27,7 +27,17 @@
       </nav>
     </header>
 
-    <main id="main">
+    <div class="atlas-shell">
+      <aside class="atlas-sidebar" aria-label="Atlas contents">
+        <p class="atlas-sidebar-label">ATLAS CONTENTS</p>
+        <nav class="atlas-tree" id="atlas-tree">
+          <a class="active" href="#top"><span>00</span><strong>Overview</strong></a>
+          <a href="#design-loop"><span>↳</span><strong>Design Loop</strong></a>
+          <a href="#quest-map"><span>↳</span><strong>Quest Map</strong></a>
+        </nav>
+        <a class="atlas-reader-link" href="learn/"><span>BOOK READER</span><strong>Open the full reader →</strong></a>
+      </aside>
+      <main id="main">
       <section class="hero" id="top">
         <div class="hero-copy">
           <p class="kicker"><span></span> LEETCODE SYSTEM & SOFTWARE DESIGN</p>
@@ -51,7 +61,7 @@
         </div>
       </section>
 
-      <section class="manifesto" aria-labelledby="manifesto-title">
+      <section class="manifesto" id="design-loop" aria-labelledby="manifesto-title">
         <p class="section-label">THE DESIGN LOOP</p>
         <h2 id="manifesto-title">Small APIs hide <em>serious architecture.</em></h2>
         <div class="loop-grid">
@@ -89,7 +99,8 @@
           <li><span>Edge</span><p>What happens at zero capacity, expiry time, duplication, and stale data?</p></li>
         </ol>
       </section>
-    </main>
+      </main>
+    </div>
 
     <footer>
       <div><span class="brand-mark" aria-hidden="true">LQ</span><p>Original learning map. Problem titles and links belong to LeetCode; this project is not affiliated with or endorsed by LeetCode.</p></div>
