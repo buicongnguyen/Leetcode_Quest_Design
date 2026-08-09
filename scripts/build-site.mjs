@@ -6,6 +6,7 @@ const dist = path.join(root, "dist");
 const english = path.join(dist, "en");
 const learn = path.join(english, "learn");
 const data = JSON.parse(await readFile(path.join(root, "data", "quests.json"), "utf8"));
+const thinking = JSON.parse(await readFile(path.join(root, "data", "thinking.json"), "utf8"));
 
 await rm(dist, { recursive: true, force: true });
 await mkdir(learn, { recursive: true });
@@ -29,7 +30,10 @@ function sidebar(active) {
     ${data.levels.map(level => `<details open>
       <summary><span>0${level.number}</span>${escapeHtml(level.shortTitle)}</summary>
       <a class="${active === level.id ? "active" : ""}" href="level-${level.number}.html">${escapeHtml(level.title)}</a>
-      ${level.questions.map(question => `<a class="${active === question.slug ? "active" : ""}" href="${question.slug}.html"><span>${question.id}</span>${escapeHtml(question.title)}</a>`).join("")}
+      ${level.questions.map(question => `<div class="tree-quest-group">
+        <a class="${active === question.slug ? "active" : ""}" href="${question.slug}.html"><span>${question.id}</span>${escapeHtml(question.title)}</a>
+        <a class="tree-thinking ${active === `${question.slug}-thinking` ? "active" : ""}" href="${question.slug}-thinking.html"><span>↳</span>Flow of thinking</a>
+      </div>`).join("")}
     </details>`).join("")}
   </nav>`;
 }
@@ -68,7 +72,7 @@ function page({ title, active, eyebrow, body, previous, next }) {
     </main>
     <aside class="article-outline" aria-label="On this page"><div>ON THIS PAGE</div><nav id="article-outline"></nav></aside>
   </div>
-  <dialog id="reader-search"><div class="search-field"><span>⌕</span><label class="sr-only" for="reader-search-input">Search the book</label><input id="reader-search-input" type="search" placeholder="Search 31 pages…"><kbd>ESC</kbd></div><div id="reader-search-results"></div></dialog>
+  <dialog id="reader-search"><div class="search-field"><span>⌕</span><label class="sr-only" for="reader-search-input">Search the book</label><input id="reader-search-input" type="search" placeholder="Search ${data.levels.length + allQuestions.length * 2 + 1} pages…"><kbd>ESC</kbd></div><div id="reader-search-results"></div></dialog>
 </body>
 </html>`;
 }
@@ -106,6 +110,7 @@ for (const [questionIndex, question] of allQuestions.entries()) {
   <div class="quest-meta"><span>LC ${question.id}</span><span class="${question.difficulty.toLowerCase()}">${question.difficulty}</span><span>${escapeHtml(question.role)}</span>${question.premium ? "<span>Premium</span>" : ""}</div>
   <p class="lead">${escapeHtml(question.goal)}</p>
   <div class="source-buttons"><a href="${urls.global}" target="_blank" rel="noreferrer">Open on LeetCode ↗</a><a href="${urls.china}" target="_blank" rel="noreferrer">LeetCode 中国 ↗</a></div>
+  <a class="thinking-launch" href="${question.slug}-thinking.html"><span>GUIDED SUBPAGE</span><strong>Flow of Thinking →</strong><em>Input → atomic operations → optimization → data-structure decisions → solution</em></a>
   <h2 id="design-lens">Design lens</h2>
   <p>This quest belongs to <a href="level-${question.level.number}.html">${escapeHtml(question.level.title)}</a>. Its primary construction is <strong>${escapeHtml(question.pattern)}</strong>.</p>
   <h2 id="state-model">State model</h2>
@@ -122,18 +127,51 @@ for (const [questionIndex, question] of allQuestions.entries()) {
   <p>After solving, record the representation, invariants, public-operation costs, one bug you avoided, and one alternative design with its tradeoff. Keep solution code in a language folder rather than copying it into this reader page.</p>`;
   const previousQuestion = allQuestions[questionIndex - 1];
   const nextQuestion = allQuestions[questionIndex + 1];
-  const previous = previousQuestion ? { href: `${previousQuestion.slug}.html`, title: previousQuestion.title } : { href: `level-${question.level.number}.html`, title: question.level.title };
-  const next = nextQuestion ? { href: `${nextQuestion.slug}.html`, title: nextQuestion.title } : null;
+  const previous = previousQuestion ? { href: `${previousQuestion.slug}-thinking.html`, title: `${previousQuestion.title}: Flow of Thinking` } : { href: `level-${question.level.number}.html`, title: question.level.title };
+  const next = { href: `${question.slug}-thinking.html`, title: `${question.title}: Flow of Thinking` };
   await writeFile(path.join(learn, `${question.slug}.html`), page({ title: question.title, active: question.slug, eyebrow: `Level 0${question.level.number} · ${question.level.shortTitle}`, body, previous, next }), "utf8");
+
+  const thought = thinking[String(question.id)];
+  const thinkingBody = `<h1>Flow of Thinking</h1>
+  <div class="quest-meta"><span>LC ${question.id}</span><span>${escapeHtml(question.title)}</span><span>${escapeHtml(question.pattern)}</span></div>
+  <p class="lead">Derive the solution from the operation contract instead of guessing a familiar data structure.</p>
+  <div class="thinking-flow" aria-label="Thinking stages"><span>INPUT</span><i>→</i><span>ATOMS</span><i>→</i><span>OPTIMIZE</span><i>→</i><span>DECIDE</span><i>→</i><span>COMBINE</span><i>→</i><span>SOLVE</span></div>
+  <h2 id="input-contract">1. Start from the input contract</h2>
+  <p>${escapeHtml(thought.input)}</p>
+  <div class="thinking-prompt"><span>ASK FIRST</span><strong>Which calls change state, which only query it, and what cost must each call meet?</strong></div>
+  <h2 id="atomic-operations">2. Decompose into the smallest operations</h2>
+  <p>Ignore classes and code for a moment. The system only needs to perform these atomic actions:</p>
+  <ol class="atom-list">${thought.atoms.map((atom, index) => `<li><span>${String(index + 1).padStart(2, "0")}</span><strong>${escapeHtml(atom)}</strong></li>`).join("")}</ol>
+  <h2 id="operation-optimization">3. Optimize every operation</h2>
+  <p>Start with the simplest implementation, expose its bottleneck, then buy the required cost with one deliberate index or representation.</p>
+  <div class="operation-table"><div class="operation-head"><span>OPERATION</span><span>NAÏVE COST</span><span>TARGET</span><span>DECISION</span></div>${thought.operations.map(operation => `<div class="operation-row"><strong>${escapeHtml(operation.operation)}</strong><span>${escapeHtml(operation.naive)}</span><span>${escapeHtml(operation.target)}</span><b>${escapeHtml(operation.decision)}</b></div>`).join("")}</div>
+  <h2 id="structure-decisions">4. Decide the data structures</h2>
+  <div class="decision-grid">${thought.operations.map((operation, index) => `<article><span>DECISION ${String(index + 1).padStart(2, "0")}</span><h3>${escapeHtml(operation.decision)}</h3><p>Chosen to make <strong>${escapeHtml(operation.operation)}</strong> meet ${escapeHtml(operation.target)} instead of ${escapeHtml(operation.naive)}.</p></article>`).join("")}</div>
+  <h2 id="combined-architecture">5. Combine the decisions</h2>
+  <p>A collection of fast structures is not yet a design. Define ownership and the invariants that keep every view synchronized.</p>
+  <ol>${thought.combine.map(item => `<li>${escapeHtml(item)}</li>`).join("")}</ol>
+  <div class="architecture-card"><span>COMBINED STRUCTURE</span><strong>${escapeHtml(question.pattern)}</strong><p>${escapeHtml(question.goal)}</p></div>
+  <h2 id="build-solution">6. Build the solution</h2>
+  <ol class="solution-steps">${thought.solution.map((step, index) => `<li><span>STEP ${String(index + 1).padStart(2, "0")}</span><p>${escapeHtml(step)}</p></li>`).join("")}</ol>
+  <h2 id="prove-complexity">7. Prove the operation budget</h2>
+  <div class="complexity-list">${thought.complexity.map(item => `<code>${escapeHtml(item)}</code>`).join("")}</div>
+  <div class="review-prompt"><span>FINAL CHECK</span><strong>${escapeHtml(question.checkpoint)}</strong></div>
+  <p><a href="${question.slug}.html">← Return to the ${escapeHtml(question.title)} design page</a></p>`;
+  const thinkingPrevious = { href: `${question.slug}.html`, title: question.title };
+  const thinkingNext = nextQuestion ? { href: `${nextQuestion.slug}.html`, title: nextQuestion.title } : null;
+  await writeFile(path.join(learn, `${question.slug}-thinking.html`), page({ title: `${question.title}: Flow of Thinking`, active: `${question.slug}-thinking`, eyebrow: `Level 0${question.level.number} · Guided reasoning`, body: thinkingBody, previous: thinkingPrevious, next: thinkingNext }), "utf8");
 }
 
 const searchIndex = [
   { title: "Quest book overview", href: "index.html", section: "Overview", text: "learning route design loop source policy" },
   ...data.levels.map(level => ({ title: level.title, href: `level-${level.number}.html`, section: `Level 0${level.number}`, text: `${level.summary} ${level.foundation} ${level.invariants.join(" ")}` })),
-  ...allQuestions.map(question => ({ title: question.title, href: `${question.slug}.html`, section: `LC ${question.id} · ${question.level.shortTitle}`, text: `${question.goal} ${question.pattern} ${question.checkpoint}` }))
+  ...allQuestions.flatMap(question => [
+    { title: question.title, href: `${question.slug}.html`, section: `LC ${question.id} · ${question.level.shortTitle}`, text: `${question.goal} ${question.pattern} ${question.checkpoint}` },
+    { title: `${question.title}: Flow of Thinking`, href: `${question.slug}-thinking.html`, section: `LC ${question.id} · Guided reasoning`, text: `${thinking[String(question.id)].input} ${thinking[String(question.id)].atoms.join(" ")} ${thinking[String(question.id)].combine.join(" ")}` }
+  ])
 ];
 await writeFile(path.join(learn, "search-index.json"), JSON.stringify(searchIndex), "utf8");
 
 await writeFile(path.join(dist, "index.html"), `<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta http-equiv="refresh" content="0; url=./en/"><title>LeetCode Design Quest</title><link rel="canonical" href="./en/"></head><body><p><a href="./en/">Open the English atlas</a></p></body></html>`, "utf8");
 
-console.log(`Built English atlas and reader (${data.levels.length + allQuestions.length + 1} reader pages) in dist/.`);
+console.log(`Built English atlas and reader (${data.levels.length + allQuestions.length * 2 + 1} reader pages) in dist/.`);

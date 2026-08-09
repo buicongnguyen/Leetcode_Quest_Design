@@ -36,6 +36,7 @@ Every level repeats the same design method: identify the authoritative state, wr
 - 26 curated LeetCode quests with Global and China links.
 - An English atlas at `/en/` and a full nested book reader at `/en/learn/`.
 - One generated reader page for every level and every quest, with a persistent chapter tree.
+- A problem-specific **Flow of Thinking** child page for every quest, deriving the solution from input operations, bottlenecks, data-structure decisions, combined architecture, and complexity proof.
 - Difficulty and Premium filters.
 - Search by problem, level, or design pattern.
 - Detailed design goals and review checkpoints without reproducing LeetCode problem statements.

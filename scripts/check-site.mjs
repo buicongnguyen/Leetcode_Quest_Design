@@ -4,6 +4,7 @@ import path from "node:path";
 
 const root = path.resolve(import.meta.dirname, "..");
 const data = JSON.parse(await readFile(path.join(root, "data", "quests.json"), "utf8"));
+const thinking = JSON.parse(await readFile(path.join(root, "data", "thinking.json"), "utf8"));
 const html = await readFile(path.join(root, "site", "index.html"), "utf8");
 const css = await readFile(path.join(root, "site", "styles.css"), "utf8");
 const js = await readFile(path.join(root, "site", "app.js"), "utf8");
@@ -16,6 +17,7 @@ const questions = data.levels.flatMap(level => level.questions);
 assert.ok(questions.length >= 25, "The foundation map must include at least 25 quests");
 assert.equal(new Set(questions.map(question => question.id)).size, questions.length, "LeetCode IDs must be unique");
 assert.equal(new Set(questions.map(question => question.slug)).size, questions.length, "LeetCode slugs must be unique");
+assert.deepEqual(Object.keys(thinking).map(Number).sort((a, b) => a - b), questions.map(question => question.id).sort((a, b) => a - b), "Every quest must have exactly one thinking flow");
 for (const level of data.levels) {
   assert.ok(level.title && level.summary && level.foundation, `${level.id} is missing learning context`);
   assert.ok(level.invariants.length >= 3, `${level.id} needs at least three invariants`);
@@ -25,6 +27,11 @@ for (const question of questions) {
   assert.match(question.slug, /^[a-z0-9-]+$/, `${question.id} has an invalid slug`);
   assert.ok(["Easy", "Medium", "Hard"].includes(question.difficulty), `${question.id} has an invalid difficulty`);
   for (const key of ["title", "role", "pattern", "goal", "checkpoint"]) assert.ok(question[key], `${question.id} is missing ${key}`);
+}
+for (const [id, flow] of Object.entries(thinking)) {
+  assert.ok(flow.input && flow.atoms.length >= 3 && flow.operations.length >= 2, `Thinking flow ${id} is missing decomposition content`);
+  assert.ok(flow.operations.every(item => item.operation && item.naive && item.target && item.decision), `Thinking flow ${id} has an incomplete optimization row`);
+  assert.ok(flow.combine.length >= 3 && flow.solution.length >= 3 && flow.complexity.length >= 2, `Thinking flow ${id} is missing architecture, solution, or complexity proof`);
 }
 for (const file of ["index.html", "styles.css", "app.js"]) await access(path.join(root, "site", file));
 for (const required of ["Skip to quest map", "aria-live=", "quest-dialog", "search-dialog", "theme-toggle"]) assert.ok(html.includes(required), `Missing accessible UI contract: ${required}`);
@@ -37,5 +44,6 @@ assert.ok(bookCss.includes(".book-tree"), "Nested reader tree is missing");
 assert.ok(bookCss.includes("grid-template-columns:280px minmax(0,1fr) 240px"), "Reader columns must span from the left edge to the right edge");
 const buildScript = await readFile(path.join(root, "scripts", "build-site.mjs"), "utf8");
 for (const readerRoute of ["en", "learn", "level-${level.number}.html", "search-index.json"]) assert.ok(buildScript.includes(readerRoute), `Reader build route is missing: ${readerRoute}`);
+for (const thinkingContract of ["thinking.json", "-thinking.html", "Flow of Thinking", "operation-table"]) assert.ok(buildScript.includes(thinkingContract), `Thinking-page build contract is missing: ${thinkingContract}`);
 
 console.log(`Static checks passed: ${data.levels.length} levels, ${questions.length} quests, unique IDs and slugs.`);

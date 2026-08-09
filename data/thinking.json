@@ -1,0 +1,317 @@
+{
+  "146": {
+    "input": "A fixed capacity and an ordered stream of get(key) and put(key, value) calls.",
+    "atoms": ["Find a key", "Read or replace its value", "Remove one node from an order", "Insert one node at the most-recent end", "Evict the least-recent node"],
+    "operations": [
+      {"operation":"Find by key","naive":"Scan an ordered list: O(n)","target":"O(1) average","decision":"Hash map from key to node"},
+      {"operation":"Refresh recency","naive":"Shift an array: O(n)","target":"O(1)","decision":"Doubly linked list detach + insert"},
+      {"operation":"Evict oldest","naive":"Search timestamps: O(n)","target":"O(1)","decision":"Keep LRU next to a tail sentinel"}
+    ],
+    "combine": ["The map owns key-to-node lookup; the list owns recency order.", "Sentinel head and tail nodes remove empty/end special cases.", "Every live key appears once in both structures."],
+    "solution": ["On get, locate the node; if absent return the miss value, otherwise move it to MRU and return it.", "On put, update and move an existing node, or create a new MRU node.", "After insertion, if size exceeds capacity, detach the LRU node and erase its map entry."],
+    "complexity": ["get: O(1) average", "put: O(1) average", "space: O(capacity)"]
+  },
+  "460": {
+    "input": "A capacity and get/put calls where eviction chooses minimum frequency, then least recency among ties.",
+    "atoms": ["Find a key", "Read/update value", "Increment frequency", "Move between frequency groups", "Evict the oldest key in the minimum group"],
+    "operations": [
+      {"operation":"Key lookup","naive":"Scan all entries","target":"O(1) average","decision":"Hash map key → entry"},
+      {"operation":"Frequency change","naive":"Re-sort all entries","target":"O(1)","decision":"Hash map frequency → recency list"},
+      {"operation":"Tie-breaking","naive":"Scan equal-frequency keys","target":"O(1)","decision":"Doubly linked list per frequency"},
+      {"operation":"Find eviction group","naive":"Search all frequencies","target":"O(1)","decision":"Maintain minFrequency"}
+    ],
+    "combine": ["Each entry stores value, frequency, and its list node.", "Each frequency bucket is an LRU list.", "minFrequency points to the only bucket eligible for eviction."],
+    "solution": ["A successful get or update removes the key from frequency f and inserts it as MRU in f+1.", "If the old minimum bucket becomes empty, increment minFrequency.", "A new key starts in frequency 1; when full, evict the LRU node from minFrequency first."],
+    "complexity": ["get: O(1) average", "put: O(1) average", "space: O(capacity)"]
+  },
+  "588": {
+    "input": "Absolute paths plus ls, mkdir, append-file, and read-file commands over an in-memory hierarchy.",
+    "atoms": ["Split a path", "Walk one child name", "Create a missing directory", "Distinguish file from directory", "List names in lexical order", "Append/read content"],
+    "operations": [
+      {"operation":"Path traversal","naive":"Search a flat list of full paths","target":"O(path depth)","decision":"Trie-like node tree"},
+      {"operation":"Child lookup","naive":"Scan sibling names","target":"O(1) average per segment","decision":"Hash map name → child"},
+      {"operation":"Sorted ls","naive":"Maintain global path ordering","target":"Sort only requested children","decision":"Sort child keys on demand or use ordered map"},
+      {"operation":"Append content","naive":"Rebuild the whole filesystem","target":"Touch one file node","decision":"Store content on the terminal node"}
+    ],
+    "combine": ["A node has children, a file flag, and content; directories ignore content.", "One path parser feeds every public operation.", "Traversal can run in lookup-only or create-missing mode."],
+    "solution": ["Normalize the path into non-empty segments and walk from root.", "mkdir creates directory nodes; addContent creates/marks the terminal file and appends.", "ls returns the file name for a file path, otherwise sorted child names; read returns terminal content."],
+    "complexity": ["traversal: O(number of path segments) average", "ls directory: O(c log c) for c children when sorting on demand", "space: O(nodes + stored content)"]
+  },
+  "604": {
+    "input": "A run-length encoded string and repeated next()/hasNext() iterator calls.",
+    "atoms": ["Read one character", "Parse a multi-digit count", "Emit one logical character", "Decrement remaining count", "Advance to the next run"],
+    "operations": [
+      {"operation":"Initialization","naive":"Expand the full decoded string","target":"O(encoded length) space or less","decision":"Keep a cursor into encoded input"},
+      {"operation":"next","naive":"Decode all remaining runs","target":"O(digits parsed) only when a run starts","decision":"Lazy run parsing"},
+      {"operation":"hasNext","naive":"Probe by consuming output","target":"O(1)","decision":"Check remaining count or unread input"}
+    ],
+    "combine": ["State is encoded cursor, current character, and remaining repetitions.", "Parsing and emitting are separate smallest operations.", "A run is parsed exactly once and never materialized."],
+    "solution": ["When remaining is zero, parse the next character and its entire decimal count.", "next returns the current character and decrements remaining; return the specified sentinel if exhausted.", "hasNext tests whether remaining output or unread encoded input exists."],
+    "complexity": ["total parsing: O(encoded length)", "next: amortized O(1)", "extra space: O(1)"]
+  },
+  "1756": {
+    "input": "An initial queue 1..n and fetch(k) calls that remove the k-th item and append it to the MRU end.",
+    "atoms": ["Find the k-th live position", "Mark one position removed", "Append one value at a new position", "Preserve relative order of all other live values"],
+    "operations": [
+      {"operation":"Rank lookup","naive":"Walk k nodes: O(n)","target":"O(log(n+q))","decision":"Fenwick tree of live-position counts"},
+      {"operation":"Remove by position","naive":"Shift an array","target":"O(log(n+q))","decision":"Add -1 at the old Fenwick index"},
+      {"operation":"Append MRU","naive":"Relink/search tail","target":"O(log(n+q))","decision":"Preallocate future positions and add +1"}
+    ],
+    "combine": ["An array maps physical position to value.", "The Fenwick tree says which physical positions are still live.", "Binary lifting/prefix search converts logical rank k into a physical position."],
+    "solution": ["Initialize positions 1..n with live count 1.", "For fetch(k), find the smallest position whose prefix live count reaches k.", "Remove that position, copy its value to the next unused tail position, mark the tail live, and return the value."],
+    "complexity": ["fetch: O(log(n+q))", "initialization: O(n log(n+q)) or O(n)", "space: O(n+q)"]
+  },
+  "346": {
+    "input": "A window size and a stream of next(value) calls returning the average of the latest values.",
+    "atoms": ["Append newest value", "Add it to a total", "Detect overflow beyond window size", "Remove oldest value", "Divide total by live count"],
+    "operations": [
+      {"operation":"Window membership","naive":"Keep all history","target":"O(window size) space","decision":"FIFO queue"},
+      {"operation":"Average","naive":"Sum the window on every call: O(k)","target":"O(1)","decision":"Running sum"},
+      {"operation":"Expiry","naive":"Search for the oldest value","target":"O(1)","decision":"Pop queue front when size exceeds k"}
+    ],
+    "combine": ["The queue is authoritative for membership; the sum is a derived index.", "Every insertion updates both before any average is returned.", "Every expired value is subtracted exactly once."],
+    "solution": ["Push the new value and add it to sum.", "If queue size exceeds the configured window, pop front and subtract it.", "Return sum divided by current queue size."],
+    "complexity": ["next: O(1)", "space: O(window size)"]
+  },
+  "359": {
+    "input": "Chronological (timestamp, message) requests asking whether the message may print under a cooldown.",
+    "atoms": ["Find message state", "Compare current time with next allowed time", "Accept or reject", "Update time only after acceptance"],
+    "operations": [
+      {"operation":"Per-message lookup","naive":"Scan prior logs","target":"O(1) average","decision":"Hash map message → nextAllowed"},
+      {"operation":"Rate decision","naive":"Count all occurrences in a window","target":"O(1)","decision":"One timestamp comparison"},
+      {"operation":"State update","naive":"Record rejected attempts too","target":"Preserve cooldown semantics","decision":"Update only on an allowed print"}
+    ],
+    "combine": ["Each message is an independent tiny state machine.", "Missing state means immediately allowed.", "The stored time is the next legal timestamp, not merely the last request."],
+    "solution": ["Look up nextAllowed for the message.", "If current time is earlier, return false without mutation.", "Otherwise store current+cooldown and return true."],
+    "complexity": ["shouldPrintMessage: O(1) average", "space: O(distinct retained messages)"]
+  },
+  "362": {
+    "input": "Chronological hit(timestamp) and getHits(timestamp) calls for a fixed recent-time window.",
+    "atoms": ["Record a hit", "Merge equal timestamps", "Expire timestamps outside the window", "Maintain total live hits"],
+    "operations": [
+      {"operation":"Record hit","naive":"Append one row per hit","target":"O(1)","decision":"Deque of (timestamp,count) buckets"},
+      {"operation":"Expire old data","naive":"Rescan full history","target":"Amortized O(1)","decision":"Pop monotonic deque front"},
+      {"operation":"Return total","naive":"Sum live buckets each query","target":"O(1) after cleanup","decision":"Running hit total"}
+    ],
+    "combine": ["Chronological input guarantees expired buckets form a prefix.", "Equal timestamps share a bucket to handle high hit volume.", "Deque membership and running total must change together."],
+    "solution": ["Before or during each operation, pop buckets older than the inclusive window and subtract their counts.", "hit increments the last bucket if timestamps match, otherwise appends a new bucket; increment total.", "getHits cleans then returns total."],
+    "complexity": ["hit: amortized O(1)", "getHits: amortized O(1)", "space: O(distinct timestamps in window)"]
+  },
+  "933": {
+    "input": "Strictly increasing ping times; each ping returns how many fall in the latest 3000-time-unit interval.",
+    "atoms": ["Append current time", "Compare oldest time with lower bound", "Remove expired prefix", "Return live count"],
+    "operations": [
+      {"operation":"Add ping","naive":"Insert into sorted history","target":"O(1)","decision":"Append to queue because input is increasing"},
+      {"operation":"Window cleanup","naive":"Filter all timestamps","target":"Amortized O(1)","decision":"Pop while front < current-3000"},
+      {"operation":"Count","naive":"Scan the window","target":"O(1)","decision":"Queue size is the answer"}
+    ],
+    "combine": ["The queue contains exactly the current valid interval.", "Monotonic input makes every expired element appear at the front.", "Each timestamp enters and leaves once."],
+    "solution": ["Append t.", "Pop front while it is smaller than t-3000; keep the inclusive boundary.", "Return queue length."],
+    "complexity": ["ping: amortized O(1)", "space: O(pings in the active window)"]
+  },
+  "2034": {
+    "input": "Out-of-order update(timestamp, price) calls, including corrections, plus current/minimum/maximum queries.",
+    "atoms": ["Find old price for a timestamp", "Replace it", "Track latest timestamp", "Remove one old price occurrence", "Insert one new price", "Read global extrema"],
+    "operations": [
+      {"operation":"Correction","naive":"Append duplicate records and rescan","target":"O(log n)","decision":"Hash map timestamp → current price"},
+      {"operation":"Latest","naive":"Find maximum timestamp each query","target":"O(1)","decision":"Maintain latestTimestamp"},
+      {"operation":"Min/max","naive":"Scan all current prices","target":"O(1) query, O(log n) update","decision":"Ordered multiset of prices"}
+    ],
+    "combine": ["The timestamp map is the source of truth.", "The multiset is a derived view and must erase exactly one old occurrence on correction.", "latestTimestamp changes only when a greater timestamp arrives."],
+    "solution": ["On update, if timestamp exists, erase one copy of its old price from the multiset.", "Write the new map value, insert the new price, and maximize latestTimestamp.", "current reads map[latestTimestamp]; minimum/maximum read the two multiset ends."],
+    "complexity": ["update: O(log n)", "current/minimum/maximum: O(1)", "space: O(n)"]
+  },
+  "622": {
+    "input": "Capacity k and queue operations enQueue, deQueue, Front, Rear, isEmpty, and isFull.",
+    "atoms": ["Locate logical front", "Locate next insertion slot", "Advance an index with wraparound", "Track live element count"],
+    "operations": [
+      {"operation":"Enqueue","naive":"Shift or grow storage","target":"O(1)","decision":"Fixed array ring buffer"},
+      {"operation":"Dequeue","naive":"Shift remaining elements","target":"O(1)","decision":"Advance front modulo k"},
+      {"operation":"Full vs empty","naive":"Ambiguous equal pointers","target":"O(1) exact state","decision":"Store count explicitly"}
+    ],
+    "combine": ["State is array, capacity, front index, and count.", "Insertion index is (front+count) mod k.", "Rear index is (front+count-1) mod k when non-empty."],
+    "solution": ["Reject enqueue when count==k; otherwise write at the computed insertion index and increment count.", "Reject dequeue when count==0; otherwise advance front and decrement count.", "Front/Rear read derived indices; empty/full compare count."],
+    "complexity": ["all operations: O(1)", "space: O(k)"]
+  },
+  "705": {
+    "input": "Integer keys with add, remove, and contains, without a built-in hash-table library.",
+    "atoms": ["Convert key to bucket index", "Search within one bucket", "Insert only if absent", "Remove one matching key"],
+    "operations": [
+      {"operation":"Bucket selection","naive":"Use one giant direct-address array","target":"Controlled memory","decision":"Modulo hash into fixed buckets"},
+      {"operation":"Collision handling","naive":"Overwrite colliding keys","target":"Preserve all keys","decision":"Separate chaining per bucket"},
+      {"operation":"Membership/change","naive":"Scan every stored key","target":"O(1) average","decision":"Scan only the selected short chain"}
+    ],
+    "combine": ["The hash function chooses a bucket; equality chooses the exact key.", "Buckets can be lists or small dynamic arrays.", "Duplicate add and absent remove are no-ops."],
+    "solution": ["Compute a non-negative bucket index.", "contains searches that bucket only.", "add appends when absent; remove deletes the matching bucket entry."],
+    "complexity": ["average operation: O(1)", "worst operation: O(n) under collisions", "space: O(n + bucket count)"]
+  },
+  "706": {
+    "input": "Integer key/value pairs with put, get, and remove, without a built-in hash map.",
+    "atoms": ["Hash key", "Find matching entry in a bucket", "Insert new pair", "Replace existing value", "Remove pair"],
+    "operations": [
+      {"operation":"Lookup","naive":"Scan every pair","target":"O(1) average","decision":"Bucket array with separate chaining"},
+      {"operation":"Put","naive":"Append duplicate keys","target":"One value per key","decision":"Search bucket, replace or append"},
+      {"operation":"Remove","naive":"Leave tombstones without policy","target":"Correct future lookup","decision":"Delete matching chain entry"}
+    ],
+    "combine": ["Hash narrows candidates; key equality resolves collisions.", "Each bucket stores key/value entries, not values alone.", "The missing-key return contract stays separate from stored values."],
+    "solution": ["Compute the bucket index from key.", "put replaces a matching entry or inserts a new one.", "get returns the matched value or missing sentinel; remove deletes only the matched key."],
+    "complexity": ["average operation: O(1)", "worst operation: O(n)", "space: O(n + bucket count)"]
+  },
+  "380": {
+    "input": "insert(value), remove(value), and uniform getRandom() with average O(1) requirements.",
+    "atoms": ["Test membership", "Append value", "Choose random index", "Remove arbitrary value", "Repair any moved index"],
+    "operations": [
+      {"operation":"Membership","naive":"Scan array","target":"O(1) average","decision":"Hash map value → array index"},
+      {"operation":"Uniform random","naive":"Iterate hash keys","target":"O(1)","decision":"Dense array + random index"},
+      {"operation":"Delete arbitrary index","naive":"Shift suffix: O(n)","target":"O(1)","decision":"Swap with last, then pop"}
+    ],
+    "combine": ["The array provides density and random indexing.", "The map provides direct membership and location.", "After a swap, update the moved value's map index before popping."],
+    "solution": ["insert rejects existing values, otherwise maps value to array length and appends.", "remove finds index, moves the last value into it, repairs that map entry, pops, and erases removed value.", "getRandom samples an integer index uniformly from the array."],
+    "complexity": ["insert/remove/getRandom: O(1) average", "space: O(n)"]
+  },
+  "1206": {
+    "input": "search(target), add(number), and erase(number) over a sorted multiset-like structure without libraries.",
+    "atoms": ["Walk right while next is smaller", "Drop one level", "Record predecessors", "Choose random tower height", "Splice/unsplice forward pointers"],
+    "operations": [
+      {"operation":"Search","naive":"Walk one linked list: O(n)","target":"Expected O(log n)","decision":"Probabilistic express lanes"},
+      {"operation":"Insert","naive":"Search separately on every level","target":"One search path","decision":"Predecessor array"},
+      {"operation":"Erase","naive":"Rebuild levels","target":"Expected O(log n)","decision":"Reuse predecessors and bypass one tower"}
+    ],
+    "combine": ["Level 0 contains all values; higher levels contain random subsets.", "A sentinel head owns the maximum number of forward pointers.", "One top-down walk records the update point at every level."],
+    "solution": ["Search moves right then down until level 0.", "Add samples a geometric height and splices a new tower after recorded predecessors.", "Erase records predecessors, verifies a matching level-0 node, and bypasses it at every level where present."],
+    "complexity": ["expected search/add/erase: O(log n)", "worst case: O(n)", "expected space: O(n)"]
+  },
+  "1603": {
+    "input": "Initial counts for three parking-space types and addCar(type) commands.",
+    "atoms": ["Map car type to one counter", "Check remaining capacity", "Reject without mutation", "Consume exactly one slot"],
+    "operations": [
+      {"operation":"Type lookup","naive":"Search parking records","target":"O(1)","decision":"Three-element counter array"},
+      {"operation":"Admission","naive":"Allocate then roll back on failure","target":"Atomic check-and-decrement","decision":"Guard before mutation"}
+    ],
+    "combine": ["Each car type is independent state.", "The remaining counter is the only source of truth.", "A failed addCar cannot change any counter."],
+    "solution": ["Translate 1-based carType to the matching array index.", "If remaining is zero, return false.", "Otherwise decrement once and return true."],
+    "complexity": ["addCar: O(1)", "space: O(1)"]
+  },
+  "1396": {
+    "input": "checkIn(id, station, time), checkOut(id, station, time), and average queries for directed station pairs.",
+    "atoms": ["Find an active rider", "Pair checkout with check-in", "Compute one trip duration", "Address a directed route", "Add duration and count", "Divide aggregate"],
+    "operations": [
+      {"operation":"Active trip lookup","naive":"Search event history","target":"O(1) average","decision":"Hash map rider → (start,time)"},
+      {"operation":"Route aggregation","naive":"Store/rescan every trip","target":"O(1) update/query","decision":"Hash map route → (total,count)"},
+      {"operation":"Route identity","naive":"Ambiguous concatenated strings","target":"Collision-free key","decision":"Tuple (start,end) or safe delimiter"}
+    ],
+    "combine": ["Active trips are transient; route aggregates are historical.", "Checkout is the transaction that removes active state and updates one route.", "Routes are directed, so (A,B) differs from (B,A)."],
+    "solution": ["checkIn writes active[id].", "checkOut reads/removes active[id], builds the route key, and adds elapsed time plus one count.", "getAverageTime returns total/count for that route."],
+    "complexity": ["all operations: O(1) average", "space: O(active riders + routes)"]
+  },
+  "1797": {
+    "input": "A TTL and strictly increasing generate, renew, and count-unexpired calls for token IDs.",
+    "atoms": ["Compute expiry", "Find current token expiry", "Reject expired renewal", "Replace expiry", "Discard expired events", "Count live tokens"],
+    "operations": [
+      {"operation":"Token lookup","naive":"Scan all tokens","target":"O(1) average","decision":"Hash map token → current expiry"},
+      {"operation":"Expiry cleanup","naive":"Scan map on every count","target":"Amortized cleanup","decision":"Queue of (expiry,token) events"},
+      {"operation":"Renew stale queue entry","naive":"Delete arbitrary queue event","target":"O(1) append","decision":"Lazy validation against current map expiry"}
+    ],
+    "combine": ["The map is authoritative; the queue is only a chronological cleanup index.", "Generate/renew append a new expiry event.", "When popping, delete a token only if the event expiry still equals its current mapped expiry."],
+    "solution": ["Clean events with expiry <= current time.", "generate stores current+TTL and enqueues it.", "renew succeeds only for a mapped unexpired token, then writes/enqueues a new expiry; count cleans and returns map size."],
+    "complexity": ["generate/renew: O(1) average", "count: amortized O(1) per event", "space: O(tokens + renewal events not yet cleaned)"]
+  },
+  "2043": {
+    "input": "Initial account balances and transfer, deposit, and withdraw commands with 1-based account numbers.",
+    "atoms": ["Validate account range", "Validate non-negative available funds", "Compute proposed debits/credits", "Commit all changes or none"],
+    "operations": [
+      {"operation":"Account lookup","naive":"Map arbitrary IDs","target":"O(1)","decision":"Balance array indexed by account-1"},
+      {"operation":"Validation","naive":"Mutate then undo","target":"No partial writes","decision":"Guard all preconditions first"},
+      {"operation":"Transfer","naive":"Two independent operations","target":"Atomic pair update","decision":"Debit and credit only after both accounts/funds pass"}
+    ],
+    "combine": ["The balance array is the source of truth.", "A command has a validation phase and a commit phase.", "Use a wide integer type for accumulated balances."],
+    "solution": ["Centralize account validity.", "Deposit validates then adds; withdraw validates account and funds then subtracts.", "Transfer validates both accounts and source funds, then applies debit and credit together."],
+    "complexity": ["all operations: O(1)", "space: O(number of accounts)"]
+  },
+  "2241": {
+    "input": "Deposits of five denomination counts and withdrawals that must greedily prefer larger banknotes.",
+    "atoms": ["Add inventory counts", "Choose usable notes from largest downward", "Track remaining amount", "Detect incomplete plan", "Commit or discard plan"],
+    "operations": [
+      {"operation":"Deposit","naive":"Store individual notes","target":"O(5)","decision":"Count array by denomination"},
+      {"operation":"Withdrawal plan","naive":"Backtracking combinations","target":"O(5) under mandated greedy policy","decision":"Take min(available, remaining/value) descending"},
+      {"operation":"Failure safety","naive":"Subtract during planning","target":"No inventory change on failure","decision":"Temporary take array, commit last"}
+    ],
+    "combine": ["Inventory is five counts aligned with denomination values.", "The greedy rule is a business requirement, not a claim of general coin-system optimality.", "Planning and mutation are separate phases."],
+    "solution": ["deposit adds each provided count.", "withdraw scans denominations high to low, records chosen notes, and reduces a local remaining amount.", "If remaining is nonzero return failure; otherwise subtract the planned counts and return them."],
+    "complexity": ["deposit/withdraw: O(5)=O(1)", "space: O(1)"]
+  },
+  "355": {
+    "input": "postTweet, follow, unfollow, and getNewsFeed calls; feeds return the newest ten relevant tweets.",
+    "atoms": ["Append a timestamped tweet", "Update a follow edge", "Find relevant authors", "Read each author's newest tweet", "Merge by recency", "Stop after ten"],
+    "operations": [
+      {"operation":"Post","naive":"Insert into one globally sorted list","target":"O(1)","decision":"Append to per-user tweet list with global sequence"},
+      {"operation":"Follow graph","naive":"Scan edges","target":"O(1) average","decision":"Hash set of followees per user"},
+      {"operation":"Feed","naive":"Collect/sort all relevant history","target":"Depend on authors and top 10","decision":"Max-heap k-way merge of list tails"}
+    ],
+    "combine": ["Per-user lists are append-only and already recency-sorted.", "The social graph selects which lists participate.", "Heap entries carry author and index so the next older tweet from that author can be added."],
+    "solution": ["post appends (sequence,tweetId) to the user's list.", "follow/unfollow update the set while self-posts are always considered.", "Feed seeds one latest tweet per relevant author, repeatedly pops newest and pushes that author's predecessor until ten or empty."],
+    "complexity": ["post/follow/unfollow: O(1) average", "feed: O((F+10) log F)", "space: O(tweets + follow edges)"]
+  },
+  "1500": {
+    "input": "An initial chunk count plus join(ownedChunks), leave(user), and request(user, chunk) operations with reusable smallest user IDs.",
+    "atoms": ["Allocate smallest free ID", "Record one user's chunks", "Record owners per chunk", "List owners", "Grant requester ownership", "Remove all ownership on leave", "Recycle ID"],
+    "operations": [
+      {"operation":"ID allocation","naive":"Scan IDs from 1","target":"O(log u)","decision":"Min-heap of recycled IDs plus nextId"},
+      {"operation":"Ownership lookup","naive":"Scan all users","target":"Direct access","decision":"Chunk → ordered owner set"},
+      {"operation":"Leave cleanup","naive":"Scan every chunk","target":"Touch only owned chunks","decision":"User → owned chunk set"}
+    ],
+    "combine": ["Ownership is indexed in both directions and both views must agree.", "A request snapshots existing owners before adding the requester.", "Leaving removes every reverse edge, erases the user, and recycles the ID."],
+    "solution": ["join chooses heap minimum or nextId, stores the user's chunk set, and inserts the user into each owner set.", "request returns the ordered owners; when non-empty, add the chunk to requester and requester to owners.", "leave iterates that user's chunks to erase reverse ownership, then pushes the ID into the free heap."],
+    "complexity": ["join/leave: proportional to owned chunks with set costs", "request: O(number of owners + log owners)", "space: O(users + ownership edges)"]
+  },
+  "1912": {
+    "input": "Shop/movie/price inventory and search(movie), rent(shop,movie), drop(shop,movie), report() operations with precise ordering and top-five limits.",
+    "atoms": ["Find immutable price", "Find cheapest available copies for one movie", "Remove/add one available copy", "Remove/add one rented copy", "Read global cheapest rented copies"],
+    "operations": [
+      {"operation":"Price lookup","naive":"Search entries","target":"O(1) average","decision":"Hash map (shop,movie) → price"},
+      {"operation":"Search available","naive":"Filter/sort all inventory","target":"O(5 + log n)","decision":"Ordered set (price,shop) per movie"},
+      {"operation":"Report rented","naive":"Filter/sort all rentals","target":"O(5)","decision":"Global ordered set (price,shop,movie)"},
+      {"operation":"Lifecycle move","naive":"Keep stale flags in queries","target":"O(log n)","decision":"Physically move tuple between indexes"}
+    ],
+    "combine": ["The price map is canonical immutable metadata.", "Availability and rented sets are mutually exclusive materialized views.", "Tuple ordering exactly encodes every tie-break rule."],
+    "solution": ["Initialize prices and insert every copy into its movie's available set.", "search iterates the first five available tuples.", "rent erases available and inserts rented; drop reverses it; report iterates the first five global rented tuples."],
+    "complexity": ["rent/drop: O(log n)", "search/report: O(5) after set lookup", "space: O(number of copies)"]
+  },
+  "2296": {
+    "input": "Text-editor commands addText, deleteText, cursorLeft, and cursorRight, with short context returned around the cursor.",
+    "atoms": ["Insert at cursor", "Delete immediately left", "Move one character left", "Move one character right", "Read up to ten characters left of cursor"],
+    "operations": [
+      {"operation":"Insert/delete near cursor","naive":"Edit middle of one string: O(n)","target":"O(characters changed)","decision":"Two buffers split at cursor"},
+      {"operation":"Move cursor","naive":"Rebuild string","target":"O(distance)","decision":"Transfer chars between left and right stacks/buffers"},
+      {"operation":"Return context","naive":"Materialize all text","target":"O(10)","decision":"Read suffix of left buffer"}
+    ],
+    "combine": ["Left buffer is text before cursor in normal order.", "Right buffer stores text after cursor in a representation that makes its near end cheap.", "The complete document is left + reverse(right) when stacks are used."],
+    "solution": ["add appends to left; delete removes min(k,left size) from left.", "cursorLeft moves characters from left to right; cursorRight moves them back.", "After delete or movement, return the last up-to-ten characters of left."],
+    "complexity": ["add/delete/move: O(number of affected characters)", "context return: O(10)", "space: O(text length)"]
+  },
+  "3484": {
+    "input": "A fixed-row, 26-column sheet with setCell, resetCell, and evaluation of formulas containing two operands joined by plus.",
+    "atoms": ["Parse a cell address", "Store/reset one value", "Split a formula", "Classify operand as literal or cell", "Resolve operand", "Add two values"],
+    "operations": [
+      {"operation":"Cell storage","naive":"Allocate/initialize full matrix","target":"Store only changed cells","decision":"Hash map cell reference → value"},
+      {"operation":"Reset","naive":"Keep explicit zeros","target":"O(1) average and sparse","decision":"Erase map key"},
+      {"operation":"Formula evaluation","naive":"Build a general expression engine","target":"O(formula length)","decision":"Parse the single '+' and resolve two tokens"}
+    ],
+    "combine": ["Unset cells and reset cells both resolve to zero.", "One resolve(token) helper handles literals and addresses.", "Storage and parsing remain independent so the supported grammar is explicit."],
+    "solution": ["set writes the cell key; reset erases it.", "getValue removes the leading '=', splits once at '+', and resolves both operands.", "A token beginning with a letter reads the map with default zero; otherwise parse the integer; return their sum."],
+    "complexity": ["set/reset: O(1) average", "getValue: O(formula length)", "space: O(nonzero explicitly set cells)"]
+  },
+  "432": {
+    "input": "inc(key), dec(key), getMaxKey(), and getMinKey() with every operation required in O(1) average time.",
+    "atoms": ["Find a key's current count group", "Find adjacent count group", "Create/remove a group", "Move key between groups", "Read either end group", "Choose any key in a group"],
+    "operations": [
+      {"operation":"Key location","naive":"Search all count groups","target":"O(1) average","decision":"Hash map key → bucket node"},
+      {"operation":"Count ordering","naive":"Heap/tree gives O(log n) updates","target":"O(1)","decision":"Doubly linked list of existing count buckets"},
+      {"operation":"Keys sharing a count","naive":"One node per key breaks adjacency","target":"O(1) add/remove","decision":"Hash set inside each bucket"},
+      {"operation":"Min/max","naive":"Scan counts","target":"O(1)","decision":"Sentinel-adjacent first/last buckets"}
+    ],
+    "combine": ["Buckets are strictly ordered by count but only existing counts are stored.", "The key map points directly to the containing bucket.", "Empty buckets are removed immediately so the two ends always represent min and max."],
+    "solution": ["inc moves a key to count+1, creating the adjacent bucket when absent; a new key enters count 1.", "dec moves to count-1 or deletes a count-1 key.", "After every move remove an empty old bucket; min/max return any key from the first/last real bucket."],
+    "complexity": ["inc/dec/getMin/getMax: O(1) average", "space: O(number of keys)"]
+  }
+}
