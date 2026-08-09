@@ -20,11 +20,11 @@ The site follows the atlas-plus-reader shape of the nearby Hello Algo project.
 
 ## Authoring model
 
-`data/quests.json` stores the five-level hierarchy and quest metadata, `data/thinking.json` stores guided derivations, and the modules in `data/solutions/` store original editorials plus Python3/C++ submissions. The build creates:
+`data/quests.json` stores the five-level hierarchy and quest metadata, `data/guides.mjs` stores the chapter teaching guides and per-quest practice layer, `data/thinking.json` stores guided derivations, and the modules in `data/solutions/` store original editorials plus Python3/C++ submissions. The build creates:
 
 - the English atlas at `/en/`;
 - the book overview and persistent chapter tree at `/en/learn/`;
-- five level introductions;
+- five enriched level introductions with prerequisites, outcomes, progression, failure modes, and practice protocols;
 - one design-review article, one thinking flow, and one editorial solution for each quest;
 - previous/next navigation and a reader-wide search index;
 - a root redirect to `/en/`.

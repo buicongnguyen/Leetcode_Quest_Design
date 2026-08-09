@@ -3,6 +3,7 @@ const THEME_KEY = "leetcode-design-quest-theme";
 
 const state = {
   data: null,
+  guides: null,
   difficulty: "All",
   includePremium: false,
   completed: loadCompleted(),
@@ -91,7 +92,7 @@ function renderLevels() {
       <div class="level-body" id="body-${level.id}">
         <div class="level-intro">
           <p>${level.summary}</p>
-          <dl><div><dt>FOUNDATION</dt><dd>${level.foundation}</dd></div><div><dt>KEY INVARIANT</dt><dd>${level.invariants[0]}</dd></div></dl>
+          <dl><div><dt>FOUNDATION</dt><dd>${level.foundation}</dd></div><div><dt>KEY INVARIANT</dt><dd>${level.invariants[0]}</dd></div><div><dt>CHAPTER OUTCOME</dt><dd>${state.guides.chapters[String(level.number)].outcomes[0]}</dd></div></dl>
         </div>
         <div class="quest-list">
           ${level.questions.map(question => renderQuestCard(question)).join("")}
@@ -131,6 +132,7 @@ function openQuest(id) {
   const quest = allQuestions().find(item => item.id === id);
   if (!quest) return;
   state.activeQuest = quest;
+  const guide = state.guides.quests[String(quest.id)];
   const urls = questUrls(quest.slug);
   document.querySelector("#dialog-level").textContent = `Level 0${quest.level.number} · ${quest.level.title}`;
   document.querySelector("#dialog-id").textContent = `LC ${quest.id}`;
@@ -138,6 +140,8 @@ function openQuest(id) {
   document.querySelector("#dialog-badges").innerHTML = `${difficultyBadge(quest.difficulty)}<span class="badge role">${quest.role}</span>${quest.premium ? '<span class="badge role">Premium</span>' : ""}`;
   document.querySelector("#dialog-goal").textContent = quest.goal;
   document.querySelector("#dialog-pattern").textContent = quest.pattern;
+  document.querySelector("#dialog-outcome").textContent = guide.outcomes[0];
+  document.querySelector("#dialog-edge-case").textContent = guide.edgeCases[0];
   document.querySelector("#dialog-checkpoint").textContent = quest.checkpoint;
   document.querySelector("#dialog-overview").href = `learn/${quest.slug}.html`;
   document.querySelector("#dialog-thinking").href = `learn/${quest.slug}-thinking.html`;
@@ -227,9 +231,10 @@ function bindStaticEvents() {
 }
 
 async function init() {
-  const response = await fetch("data/quests.json");
+  const [response, guideResponse] = await Promise.all([fetch("data/quests.json"), fetch("data/guides.json")]);
   if (!response.ok) throw new Error(`Quest data failed to load (${response.status})`);
-  state.data = await response.json();
+  if (!guideResponse.ok) throw new Error(`Learning guides failed to load (${guideResponse.status})`);
+  [state.data, state.guides] = await Promise.all([response.json(), guideResponse.json()]);
   const total = allQuestions().length;
   document.querySelector("#stat-levels").textContent = state.data.levels.length;
   document.querySelector("#stat-quests").textContent = total;

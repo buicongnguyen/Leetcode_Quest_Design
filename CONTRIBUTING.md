@@ -15,6 +15,8 @@ Edit `data/quests.json`. Each quest needs:
 
 Do not copy a problem statement, example, editorial, company tag, or solution from LeetCode. Link to the canonical page instead. Original explanations, traces, diagrams, and implementations belong in the matching module under `data/solutions/` and must use the exact LeetCode class/method interface.
 
+Every quest also needs a complete entry in `data/guides.mjs`: chapter placement, prerequisites, measurable outcomes, edge cases, common mistakes, one alternative with a use case and tradeoff, three pre-code tests, and at least two interview follow-ups. Chapter guides in the same file must cover prerequisites, outcomes, quest progression, recurring failure modes, practice protocol, and the bridge to the next stage.
+
 ## Choose the right level
 
 - **Level 1:** eviction, cache-like ordering, bounded ownership, or lazy state.
@@ -30,4 +32,4 @@ npm run check
 npm run build
 ```
 
-The checks reject duplicate IDs/slugs, incomplete thinking or solution coverage, invalid difficulties, missing editorial fields, malformed diagrams, undersized code submissions, and broken core UI contracts.
+The checks reject duplicate IDs/slugs, incomplete chapter/quest guide coverage, incomplete thinking or solution coverage, invalid difficulties, missing editorial fields, malformed diagrams, undersized code submissions, and broken core UI contracts.

@@ -36,7 +36,9 @@ Every level repeats the same design method: identify the authoritative state, wr
 - 26 curated LeetCode quests with Global and China links.
 - An English atlas at `/en/` and a full nested book reader at `/en/learn/`.
 - One generated reader page for every level and every quest, with a persistent chapter tree.
+- Chapter guides with prerequisites, measurable outcomes, quest progression, recurring failure modes, a practice protocol, and a bridge to the next stage.
 - A problem-specific **Flow of Thinking** child page for every quest, deriving the solution from input operations, bottlenecks, data-structure decisions, combined architecture, and complexity proof.
+- A learning contract, edge-case lab, wrong-turn review, alternative-design tradeoff, and pre-code test plan for every quest.
 - An original **Editorial Solution** child page for every quest, with input/output analysis, an example trace, data-structure diagram, complexity graph, pseudocode, proof, and complete Python3/C++ tabs.
 - Difficulty and Premium filters.
 - Search by problem, level, or design pattern.
@@ -69,6 +71,8 @@ This project contains original summaries, learning goals, explanations, diagrams
 See [CONTRIBUTING.md](CONTRIBUTING.md) for the quest-entry schema and review checklist.
 
 The generated route structure and content architecture are documented in [SITE.md](SITE.md).
+
+The chapter-by-chapter and quest-by-quest evaluation is documented in [CONTENT_AUDIT.md](CONTENT_AUDIT.md).
 
 ## License
 

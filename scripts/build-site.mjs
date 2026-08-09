@@ -3,6 +3,7 @@ import path from "node:path";
 import level12Solutions from "../data/solutions/levels-1-2.mjs";
 import level34Solutions from "../data/solutions/levels-3-4.mjs";
 import level5Solutions from "../data/solutions/level-5.mjs";
+import guides from "../data/guides.mjs";
 
 const root = path.resolve(import.meta.dirname, "..");
 const dist = path.join(root, "dist");
@@ -16,6 +17,7 @@ await rm(dist, { recursive: true, force: true });
 await mkdir(learn, { recursive: true });
 await cp(path.join(root, "site"), english, { recursive: true });
 await cp(path.join(root, "data"), path.join(english, "data"), { recursive: true });
+await writeFile(path.join(english, "data", "guides.json"), JSON.stringify(guides), "utf8");
 await cp(path.join(root, "reader", "book.css"), path.join(learn, "book.css"));
 await cp(path.join(root, "reader", "book.js"), path.join(learn, "book.js"));
 await writeFile(path.join(dist, ".nojekyll"), "", "utf8");
@@ -125,23 +127,38 @@ const overviewBody = `<h1>System & Software Design</h1>
 <div class="callout"><strong>How to use this reader</strong><p>Read each level introduction first. Then solve its quests in order. Before opening the editor, write the state, invariants, and target cost on paper.</p></div>
 <h2 id="learning-route">The learning route</h2>
 <div class="chapter-grid">${data.levels.map(level => `<a href="level-${level.number}.html"><span>LEVEL 0${level.number}</span><h3>${escapeHtml(level.title)}</h3><p>${escapeHtml(level.summary)}</p><b>${level.questions.length} quests →</b></a>`).join("")}</div>
+<h2 id="three-page-cycle">The three-page learning cycle</h2>
+<div class="learning-cycle"><article><span>01 · OVERVIEW</span><h3>Frame the challenge</h3><p>Check prerequisites, derive the operation budget, and trace the problem-specific edge cases before choosing a representation.</p></article><article><span>02 · THINKING</span><h3>Derive and challenge</h3><p>Decompose operations, optimize them, compare an alternative, reject common mistakes, and write tests before code.</p></article><article><span>03 · SOLUTION</span><h3>Prove and implement</h3><p>Study the trace, diagram, algorithm, proof, complexity graph, follow-ups, and complete Python3/C++ submissions.</p></article></div>
 <h2 id="design-loop">The design loop</h2>
-<ol><li><strong>Model:</strong> name authoritative and derived state.</li><li><strong>Protect:</strong> state invariants in plain language.</li><li><strong>Index:</strong> use operation costs to choose secondary structures.</li><li><strong>Prove:</strong> trace success, rejection, cleanup, and boundary cases.</li></ol>
+<ol><li><strong>Model:</strong> name authoritative and derived state.</li><li><strong>Protect:</strong> state invariants in plain language.</li><li><strong>Index:</strong> use operation costs to choose secondary structures.</li><li><strong>Test:</strong> trace boundaries, rejection, cleanup, and repeated updates.</li><li><strong>Prove:</strong> connect every complexity claim to one primitive operation.</li></ol>
 <h2 id="source-policy">Source policy</h2>
 <p>This reader links to LeetCode for the original problem statements. Its reasoning, examples, diagrams, editorials, and implementations are independently written for this learning path. Premium quests remain marked.</p>`;
 
 await writeFile(path.join(learn, "index.html"), page({ title: "Quest book overview", active: "home", eyebrow: data.version, body: overviewBody, next: { href: "level-1.html", title: data.levels[0].title } }), "utf8");
 
 for (const [levelIndex, level] of data.levels.entries()) {
+  const chapterGuide = guides.chapters[String(level.number)];
   const levelBody = `<h1>${escapeHtml(level.title)}</h1>
   <p class="lead">${escapeHtml(level.summary)}</p>
   <div class="level-facts"><div><span>FOUNDATION</span><strong>${escapeHtml(level.foundation)}</strong></div><div><span>QUESTS</span><strong>${level.questions.length}</strong></div><div><span>LEVEL</span><strong>0${level.number} / 05</strong></div></div>
+  <h2 id="before-this-chapter">Before this chapter</h2>
+  <div class="prerequisite-grid">${chapterGuide.prerequisites.map((item, index) => `<article><span>PREREQUISITE ${String(index + 1).padStart(2, "0")}</span><p>${escapeHtml(item)}</p></article>`).join("")}</div>
+  <h2 id="chapter-outcomes">What you will be able to do</h2>
+  <ul class="outcome-list">${chapterGuide.outcomes.map(item => `<li><span>✓</span><strong>${escapeHtml(item)}</strong></li>`).join("")}</ul>
+  <h2 id="quest-progression">Why the quests are in this order</h2>
+  <div class="progression-list">${chapterGuide.progression.map((step, index) => {
+    const question = level.questions.find(item => item.id === step.id);
+    return `<a href="${question.slug}.html"><span>${String(index + 1).padStart(2, "0")}</span><div><b>LC ${question.id} · ${escapeHtml(question.title)}</b><p>${escapeHtml(step.lesson)}</p></div><em class="${question.difficulty.toLowerCase()}">${question.difficulty}</em></a>`;
+  }).join("")}</div>
   <h2 id="invariants">Invariants to protect</h2>
   <ul>${level.invariants.map(invariant => `<li>${escapeHtml(invariant)}</li>`).join("")}</ul>
-  <h2 id="quest-order">Quest order</h2>
-  <div class="quest-table">${level.questions.map(question => `<a href="${question.slug}.html"><span>${question.role}</span><b>LC ${question.id}</b><strong>${escapeHtml(question.title)}</strong><em class="${question.difficulty.toLowerCase()}">${question.difficulty}</em></a>`).join("")}</div>
+  <h2 id="failure-modes">Recurring failure modes</h2>
+  <ul class="warning-list">${chapterGuide.failureModes.map(item => `<li>${escapeHtml(item)}</li>`).join("")}</ul>
+  <h2 id="practice-protocol">Practice protocol</h2>
+  <ol class="study-protocol">${chapterGuide.practiceProtocol.map((item, index) => `<li><span>STEP ${String(index + 1).padStart(2, "0")}</span><p>${escapeHtml(item)}</p></li>`).join("")}</ol>
+  <div class="chapter-bridge"><span>BRIDGE TO THE NEXT STAGE</span><p>${escapeHtml(chapterGuide.bridge)}</p></div>
   <h2 id="exit-check">Level exit check</h2>
-  <p>Explain the authoritative state, every secondary index, and one failure-path trace for each quest. You are ready to advance when the complexity argument follows directly from the representation.</p>`;
+  <p>For every quest, explain the authoritative state, every secondary index, one rejected or boundary trace, and why the stated complexity follows from the representation. Advance only when you can answer without reading the solution.</p>`;
   const previousLevel = data.levels[levelIndex - 1];
   const previousLevelLastQuest = previousLevel?.questions.at(-1);
   const previous = levelIndex === 0 ? { href: "index.html", title: "Quest book overview" } : { href: `${previousLevelLastQuest.slug}-solution.html`, title: `${previousLevelLastQuest.title}: Solution` };
@@ -151,6 +168,8 @@ for (const [levelIndex, level] of data.levels.entries()) {
 
 for (const [questionIndex, question] of allQuestions.entries()) {
   const urls = { global: `https://leetcode.com/problems/${question.slug}/`, china: `https://leetcode.cn/problems/${question.slug}/` };
+  const thought = thinking[String(question.id)];
+  const guide = guides.quests[String(question.id)];
   const body = `<h1>${escapeHtml(question.title)}</h1>
   <div class="quest-meta"><span>LC ${question.id}</span><span class="${question.difficulty.toLowerCase()}">${question.difficulty}</span><span>${escapeHtml(question.role)}</span>${question.premium ? "<span>Premium</span>" : ""}</div>
   <p class="lead">${escapeHtml(question.goal)}</p>
@@ -159,20 +178,21 @@ for (const [questionIndex, question] of allQuestions.entries()) {
     <a class="thinking-launch" href="${question.slug}-thinking.html"><span>GUIDED SUBPAGE</span><strong>Flow of Thinking →</strong><em>Input → atomic operations → optimization → data-structure decisions</em></a>
     <a class="thinking-launch solution-launch" href="${question.slug}-solution.html"><span>EDITORIAL SUBPAGE</span><strong>Read the Solution →</strong><em>Input/output analysis → diagram → proof → Python3 and C++</em></a>
   </div>
-  <h2 id="design-lens">Design lens</h2>
-  <p>This quest belongs to <a href="level-${question.level.number}.html">${escapeHtml(question.level.title)}</a>. Its primary construction is <strong>${escapeHtml(question.pattern)}</strong>.</p>
-  <h2 id="state-model">State model</h2>
-  <p>Begin with the minimum canonical state needed by the public API. Add a secondary structure only when it directly pays for a required lookup, ordering, rank, expiry, or aggregate operation.</p>
-  <div class="state-card"><span>PRIMARY PATTERN</span><strong>${escapeHtml(question.pattern)}</strong><p>Write who owns each record and how every index points back to it. Avoid two independently mutable sources of truth.</p></div>
-  <h2 id="invariant-check">Invariant check</h2>
-  <ul>${question.level.invariants.map(invariant => `<li>${escapeHtml(invariant)}</li>`).join("")}</ul>
-  <h2 id="complexity-contract">Complexity contract</h2>
-  <p>List every public operation and its target time/space cost from the problem. For each cost, point to the exact primitive operation that achieves it. If cleanup is amortized or a structure is probabilistic, say so explicitly.</p>
+  <h2 id="chapter-placement">Why this quest is here</h2>
+  <p>${escapeHtml(guide.placement)}</p>
+  <p class="chapter-link">Chapter context: <a href="level-${question.level.number}.html">${escapeHtml(question.level.title)}</a> · Primary pattern: <strong>${escapeHtml(question.pattern)}</strong></p>
+  <h2 id="learning-contract">Learning contract</h2>
+  <div class="learning-contract"><article><span>KNOW BEFORE</span><ul>${guide.prerequisites.map(item => `<li>${escapeHtml(item)}</li>`).join("")}</ul></article><article><span>BE ABLE TO</span><ul>${guide.outcomes.map(item => `<li>${escapeHtml(item)}</li>`).join("")}</ul></article></div>
+  <h2 id="input-operation-budget">Input and operation budget</h2>
+  <p>${escapeHtml(thought.input)}</p>
+  <div class="operation-table"><div class="operation-head"><span>OPERATION</span><span>NAÏVE COST</span><span>TARGET</span><span>DESIGN LEVER</span></div>${thought.operations.map(operation => `<div class="operation-row"><strong>${escapeHtml(operation.operation)}</strong><span>${escapeHtml(operation.naive)}</span><span>${escapeHtml(operation.target)}</span><b>${escapeHtml(operation.decision)}</b></div>`).join("")}</div>
+  <h2 id="state-model">State model to investigate</h2>
+  <div class="state-card"><span>PRIMARY PATTERN</span><strong>${escapeHtml(question.pattern)}</strong><p>${escapeHtml(thought.combine[0])}</p></div>
   <h2 id="edge-case-lab">Edge-case lab</h2>
-  <ul><li>Trace the empty and single-record states.</li><li>Repeat or reject an operation and verify that every index still agrees.</li><li>Cross the boundary that triggers eviction, expiry, replacement, or rebalancing.</li></ul>
+  <ul>${guide.edgeCases.map(item => `<li>${escapeHtml(item)}</li>`).join("")}</ul>
   <div class="review-prompt"><span>REVIEW CHECKPOINT</span><strong>${escapeHtml(question.checkpoint)}</strong></div>
-  <h2 id="solution-record">Solution record</h2>
-  <p>After solving, compare your representation, invariants, and operation costs with the original editorial and complete implementations on the solution subpage.</p>`;
+  <h2 id="recommended-route">Recommended route</h2>
+  <ol><li>Attempt the operation budget and edge cases from this page.</li><li>Use <a href="${question.slug}-thinking.html">Flow of Thinking</a> only when your representation stalls.</li><li>Compare the finished design and code on the <a href="${question.slug}-solution.html">Editorial Solution</a>.</li></ol>`;
   const previousQuestion = allQuestions[questionIndex - 1];
   const nextQuestion = allQuestions[questionIndex + 1];
   const startsLevel = !previousQuestion || previousQuestion.level.id !== question.level.id;
@@ -180,7 +200,6 @@ for (const [questionIndex, question] of allQuestions.entries()) {
   const next = { href: `${question.slug}-thinking.html`, title: `${question.title}: Flow of Thinking` };
   await writeFile(path.join(learn, `${question.slug}.html`), page({ title: question.title, active: question.slug, eyebrow: `Level 0${question.level.number} · ${question.level.shortTitle}`, body, previous, next }), "utf8");
 
-  const thought = thinking[String(question.id)];
   const thinkingBody = `<h1>Flow of Thinking</h1>
   <div class="quest-meta"><span>LC ${question.id}</span><span>${escapeHtml(question.title)}</span><span>${escapeHtml(question.pattern)}</span></div>
   <p class="lead">Derive the solution from the operation contract instead of guessing a familiar data structure.</p>
@@ -204,6 +223,12 @@ for (const [questionIndex, question] of allQuestions.entries()) {
   <ol class="solution-steps">${thought.solution.map((step, index) => `<li><span>STEP ${String(index + 1).padStart(2, "0")}</span><p>${escapeHtml(step)}</p></li>`).join("")}</ol>
   <h2 id="prove-complexity">7. Prove the operation budget</h2>
   <div class="complexity-list">${thought.complexity.map(item => `<code>${escapeHtml(item)}</code>`).join("")}</div>
+  <h2 id="common-wrong-turns">8. Reject the common wrong turns</h2>
+  <div class="wrong-turn-grid">${guide.mistakes.map((item, index) => `<article><span>WRONG TURN ${String(index + 1).padStart(2, "0")}</span><p>${escapeHtml(item)}</p></article>`).join("")}</div>
+  <h2 id="alternative-design">9. Challenge the chosen design</h2>
+  <div class="alternative-card"><span>ALTERNATIVE</span><h3>${escapeHtml(guide.alternative.name)}</h3><p><strong>Use it when:</strong> ${escapeHtml(guide.alternative.useWhen)}</p><p><strong>Tradeoff:</strong> ${escapeHtml(guide.alternative.tradeoff)}</p></div>
+  <h2 id="pre-code-tests">10. Write tests before code</h2>
+  <div class="test-plan">${guide.tests.map(test => `<article><span>${escapeHtml(test.name)}</span><p>${escapeHtml(test.scenario)}</p><strong>${escapeHtml(test.expectation)}</strong></article>`).join("")}</div>
   <div class="review-prompt"><span>FINAL CHECK</span><strong>${escapeHtml(question.checkpoint)}</strong></div>
   <p><a href="${question.slug}.html">← Return to the ${escapeHtml(question.title)} design page</a></p>`;
   const thinkingPrevious = { href: `${question.slug}.html`, title: question.title };
@@ -231,10 +256,12 @@ for (const [questionIndex, question] of allQuestions.entries()) {
   <pre class="pseudocode-block" aria-label="Pseudocode"><code>${escapeHtml(solution.pseudocode)}</code></pre>
   <h2 id="correctness-proof">6. Why the solution is correct</h2>
   <ol>${solution.proof.map(statement => `<li>${escapeHtml(statement)}</li>`).join("")}</ol>
-  <h2 id="complexity-graph">7. Complexity graph</h2>
+  <h2 id="interview-follow-ups">7. Interview follow-ups</h2>
+  <div class="followup-grid">${guide.followUps.map((item, index) => `<article><span>FOLLOW-UP ${String(index + 1).padStart(2, "0")}</span><p>${escapeHtml(item)}</p></article>`).join("")}</div>
+  <h2 id="complexity-graph">8. Complexity graph</h2>
   <div class="complexity-chart" aria-label="Operation complexity graph">${solution.complexity.map(item => `<div class="complexity-row"><div><strong>${escapeHtml(item.operation)}</strong><code>${escapeHtml(item.time)}</code></div><span class="complexity-track"><i style="--cost-width:${complexityWidth(item.time)}%"></i></span><p>${escapeHtml(item.reason)}</p></div>`).join("")}</div>
   <p class="chart-note">Shorter bars represent a smaller asymptotic growth class; labels remain the source of truth when several variables are involved.</p>
-  <h2 id="full-solution">8. Full solution</h2>
+  <h2 id="full-solution">9. Full solution</h2>
   <p>Switch languages without leaving the page. Each tab contains a complete submission using LeetCode's expected class and method names.</p>
   ${codeWorkbench(question, solution)}
   <div class="review-prompt"><span>FINAL REVIEW</span><strong>${escapeHtml(question.checkpoint)}</strong></div>
@@ -247,11 +274,11 @@ for (const [questionIndex, question] of allQuestions.entries()) {
 
 const searchIndex = [
   { title: "Quest book overview", href: "index.html", section: "Overview", text: "learning route design loop source policy" },
-  ...data.levels.map(level => ({ title: level.title, href: `level-${level.number}.html`, section: `Level 0${level.number}`, text: `${level.summary} ${level.foundation} ${level.invariants.join(" ")}` })),
+  ...data.levels.map(level => ({ title: level.title, href: `level-${level.number}.html`, section: `Level 0${level.number}`, text: `${level.summary} ${level.foundation} ${level.invariants.join(" ")} ${guides.chapters[String(level.number)].prerequisites.join(" ")} ${guides.chapters[String(level.number)].outcomes.join(" ")}` })),
   ...allQuestions.flatMap(question => [
-    { title: question.title, href: `${question.slug}.html`, section: `LC ${question.id} · ${question.level.shortTitle}`, text: `${question.goal} ${question.pattern} ${question.checkpoint}` },
-    { title: `${question.title}: Flow of Thinking`, href: `${question.slug}-thinking.html`, section: `LC ${question.id} · Guided reasoning`, text: `${thinking[String(question.id)].input} ${thinking[String(question.id)].atoms.join(" ")} ${thinking[String(question.id)].combine.join(" ")}` },
-    { title: `${question.title}: Solution`, href: `${question.slug}-solution.html`, section: `LC ${question.id} · Editorial`, text: `${solutions[String(question.id)].inputModel} ${solutions[String(question.id)].intuition} ${solutions[String(question.id)].approach.join(" ")}` }
+    { title: question.title, href: `${question.slug}.html`, section: `LC ${question.id} · ${question.level.shortTitle}`, text: `${question.goal} ${question.pattern} ${question.checkpoint} ${guides.quests[String(question.id)].placement} ${guides.quests[String(question.id)].outcomes.join(" ")} ${guides.quests[String(question.id)].edgeCases.join(" ")}` },
+    { title: `${question.title}: Flow of Thinking`, href: `${question.slug}-thinking.html`, section: `LC ${question.id} · Guided reasoning`, text: `${thinking[String(question.id)].input} ${thinking[String(question.id)].atoms.join(" ")} ${thinking[String(question.id)].combine.join(" ")} ${guides.quests[String(question.id)].mistakes.join(" ")} ${guides.quests[String(question.id)].alternative.name}` },
+    { title: `${question.title}: Solution`, href: `${question.slug}-solution.html`, section: `LC ${question.id} · Editorial`, text: `${solutions[String(question.id)].inputModel} ${solutions[String(question.id)].intuition} ${solutions[String(question.id)].approach.join(" ")} ${guides.quests[String(question.id)].followUps.join(" ")}` }
   ])
 ];
 await writeFile(path.join(learn, "search-index.json"), JSON.stringify(searchIndex), "utf8");
