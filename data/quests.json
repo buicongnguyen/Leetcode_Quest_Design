@@ -1,0 +1,353 @@
+{
+  "title": "LeetCode Quest: System & Software Design",
+  "version": "Foundation map v0.1",
+  "updated": "2026-08-09",
+  "levels": [
+    {
+      "id": "cache-system-design-base",
+      "number": 1,
+      "shortTitle": "Cache Base",
+      "title": "Cache System Design Base",
+      "eyebrow": "Bounded state & eviction",
+      "summary": "Start with ownership, recency, frequency, and strict operation budgets. These quests teach how multiple structures cooperate behind one small API.",
+      "foundation": "Hash table + linked order",
+      "invariants": ["Every live key has exactly one value and one order node", "Eviction removes the globally correct victim", "Capacity and empty-state edges never break the index"],
+      "questions": [
+        {
+          "id": 146,
+          "slug": "lru-cache",
+          "title": "LRU Cache",
+          "difficulty": "Medium",
+          "role": "Foundation",
+          "pattern": "Hash map + doubly linked list",
+          "goal": "Make get and put average O(1) while keeping exact recency order.",
+          "checkpoint": "Can you move, insert, and evict a node without branching on head/tail?",
+          "premium": false
+        },
+        {
+          "id": 460,
+          "slug": "lfu-cache",
+          "title": "LFU Cache",
+          "difficulty": "Hard",
+          "role": "Boss",
+          "pattern": "Frequency buckets + LRU tie-break",
+          "goal": "Coordinate value lookup, frequency lookup, and recency inside each frequency.",
+          "checkpoint": "Can you update min-frequency correctly when a bucket becomes empty?",
+          "premium": false
+        },
+        {
+          "id": 588,
+          "slug": "design-in-memory-file-system",
+          "title": "Design In-Memory File System",
+          "difficulty": "Hard",
+          "role": "Related",
+          "pattern": "Trie-like hierarchy + metadata",
+          "goal": "Model folders and files behind path operations with deterministic listing.",
+          "checkpoint": "Is path parsing independent from traversal and node behavior?",
+          "premium": true
+        },
+        {
+          "id": 604,
+          "slug": "design-compressed-string-iterator",
+          "title": "Design Compressed String Iterator",
+          "difficulty": "Easy",
+          "role": "Related",
+          "pattern": "Lazy decoding + cursor state",
+          "goal": "Expose a tiny iterator API without expanding the encoded input.",
+          "checkpoint": "Can one cursor represent the next output across multi-digit counts?",
+          "premium": true
+        },
+        {
+          "id": 1756,
+          "slug": "design-most-recently-used-queue",
+          "title": "Design Most Recently Used Queue",
+          "difficulty": "Medium",
+          "role": "Related",
+          "pattern": "Ordered blocks or indexed tree",
+          "goal": "Fetch by rank, then move the chosen value to the most-recent end.",
+          "checkpoint": "Which structure makes both rank lookup and reorder affordable?",
+          "premium": true
+        }
+      ]
+    },
+    {
+      "id": "data-flow-processing-center",
+      "number": 2,
+      "shortTitle": "Data Flow",
+      "title": "Data Flow Processing Center",
+      "eyebrow": "Windows, clocks & corrections",
+      "summary": "Process events as they arrive. Learn when monotonic time simplifies cleanup, how rolling aggregates avoid rescanning, and how to repair out-of-order records.",
+      "foundation": "Queue + rolling aggregate",
+      "invariants": ["Expired events leave the active window exactly once", "Aggregates match the live window", "Corrections update every affected index"],
+      "questions": [
+        {
+          "id": 346,
+          "slug": "moving-average-from-data-stream",
+          "title": "Moving Average from Data Stream",
+          "difficulty": "Easy",
+          "role": "Foundation",
+          "pattern": "Fixed window queue + running sum",
+          "goal": "Maintain a window statistic without recomputing the whole window.",
+          "checkpoint": "What exact event makes the oldest value expire?",
+          "premium": true
+        },
+        {
+          "id": 359,
+          "slug": "logger-rate-limiter",
+          "title": "Logger Rate Limiter",
+          "difficulty": "Easy",
+          "role": "Core",
+          "pattern": "Per-key timestamp gate",
+          "goal": "Turn a timing rule into compact key-specific state.",
+          "checkpoint": "Can stale keys be cleaned without changing observable behavior?",
+          "premium": true
+        },
+        {
+          "id": 362,
+          "slug": "design-hit-counter",
+          "title": "Design Hit Counter",
+          "difficulty": "Medium",
+          "role": "Core",
+          "pattern": "Time window queue or circular buckets",
+          "goal": "Count recent traffic while coalescing repeated timestamps.",
+          "checkpoint": "How does your design change when traffic per second is huge?",
+          "premium": true
+        },
+        {
+          "id": 933,
+          "slug": "number-of-recent-calls",
+          "title": "Number of Recent Calls",
+          "difficulty": "Easy",
+          "role": "Checkpoint",
+          "pattern": "Monotonic queue",
+          "goal": "Use ordered arrival time to make window cleanup amortized O(1).",
+          "checkpoint": "Can you prove each timestamp enters and leaves once?",
+          "premium": false
+        },
+        {
+          "id": 2034,
+          "slug": "stock-price-fluctuation",
+          "title": "Stock Price Fluctuation",
+          "difficulty": "Medium",
+          "role": "Boss",
+          "pattern": "Primary map + ordered multiset or lazy heaps",
+          "goal": "Support corrections, latest value, minimum, and maximum together.",
+          "checkpoint": "When data is corrected, how are stale extrema removed safely?",
+          "premium": false
+        }
+      ]
+    },
+    {
+      "id": "data-structure-design-workshop",
+      "number": 3,
+      "shortTitle": "DS Workshop",
+      "title": "Data Structure Design Workshop",
+      "eyebrow": "Build the machinery",
+      "summary": "Implement familiar abstractions instead of consuming them. The focus shifts to representation choices, collision policy, rebalancing, and probabilistic structure.",
+      "foundation": "Representation + invariant",
+      "invariants": ["Public operations never expose internal sentinel state", "Size and membership indexes agree", "Expected and worst-case costs are stated honestly"],
+      "questions": [
+        {
+          "id": 622,
+          "slug": "design-circular-queue",
+          "title": "Design Circular Queue",
+          "difficulty": "Medium",
+          "role": "Foundation",
+          "pattern": "Ring buffer + modular arithmetic",
+          "goal": "Represent FIFO state in fixed memory without shifting elements.",
+          "checkpoint": "Can you distinguish full from empty without ambiguous pointers?",
+          "premium": false
+        },
+        {
+          "id": 705,
+          "slug": "design-hashset",
+          "title": "Design HashSet",
+          "difficulty": "Easy",
+          "role": "Core",
+          "pattern": "Buckets + collision strategy",
+          "goal": "Own the hash function, buckets, membership, and removal behavior.",
+          "checkpoint": "What input pattern produces your worst collision chain?",
+          "premium": false
+        },
+        {
+          "id": 706,
+          "slug": "design-hashmap",
+          "title": "Design HashMap",
+          "difficulty": "Easy",
+          "role": "Core",
+          "pattern": "Key-value buckets",
+          "goal": "Extend membership into correct replacement and retrieval semantics.",
+          "checkpoint": "How do you distinguish a missing key from a stored sentinel-like value?",
+          "premium": false
+        },
+        {
+          "id": 380,
+          "slug": "insert-delete-getrandom-o1",
+          "title": "Insert Delete GetRandom O(1)",
+          "difficulty": "Medium",
+          "role": "Checkpoint",
+          "pattern": "Dense array + value-to-index map",
+          "goal": "Combine random access with constant-time deletion by swapping with the tail.",
+          "checkpoint": "Which index must be repaired after a removal swap?",
+          "premium": false
+        },
+        {
+          "id": 1206,
+          "slug": "design-skiplist",
+          "title": "Design Skiplist",
+          "difficulty": "Hard",
+          "role": "Boss",
+          "pattern": "Probabilistic layered lists",
+          "goal": "Build expected logarithmic search, add, and erase without a balanced tree library.",
+          "checkpoint": "Can one predecessor search path drive both insertion and deletion?",
+          "premium": false
+        }
+      ]
+    },
+    {
+      "id": "business-system-simulation-platform",
+      "number": 4,
+      "shortTitle": "Business Sim",
+      "title": "Business System Simulation Platform",
+      "eyebrow": "Entities, rules & transactions",
+      "summary": "Translate business language into entities and legal state transitions. These quests reward clean domain keys, atomic updates, and explicit failure behavior.",
+      "foundation": "State machine + domain indexes",
+      "invariants": ["Every command begins from a legal state", "Rejected commands leave state untouched", "Summary queries derive from authoritative records"],
+      "questions": [
+        {
+          "id": 1603,
+          "slug": "design-parking-system",
+          "title": "Design Parking System",
+          "difficulty": "Easy",
+          "role": "Foundation",
+          "pattern": "Capacity counters",
+          "goal": "Encode a small allocation policy with correct rejection behavior.",
+          "checkpoint": "Does a failed admission mutate capacity?",
+          "premium": false
+        },
+        {
+          "id": 1396,
+          "slug": "design-underground-system",
+          "title": "Design Underground System",
+          "difficulty": "Medium",
+          "role": "Core",
+          "pattern": "Active sessions + route aggregates",
+          "goal": "Pair check-in/check-out events and maintain route averages incrementally.",
+          "checkpoint": "Which composite key uniquely names a directed route?",
+          "premium": false
+        },
+        {
+          "id": 1797,
+          "slug": "design-authentication-manager",
+          "title": "Design Authentication Manager",
+          "difficulty": "Medium",
+          "role": "Core",
+          "pattern": "Token expiry index",
+          "goal": "Model generation, renewal, expiry, and live-count semantics.",
+          "checkpoint": "Is expiry inclusive or exclusive at the current timestamp?",
+          "premium": false
+        },
+        {
+          "id": 2043,
+          "slug": "simple-bank-system",
+          "title": "Simple Bank System",
+          "difficulty": "Medium",
+          "role": "Checkpoint",
+          "pattern": "Validated transactional updates",
+          "goal": "Keep account validation and balance mutation atomic across transfers.",
+          "checkpoint": "Can every rejected operation prove that no balance changed?",
+          "premium": false
+        },
+        {
+          "id": 2241,
+          "slug": "design-an-atm-machine",
+          "title": "Design an ATM Machine",
+          "difficulty": "Medium",
+          "role": "Boss",
+          "pattern": "Inventory + constrained greedy transaction",
+          "goal": "Plan a withdrawal, validate it fully, then commit inventory changes.",
+          "checkpoint": "Why must mutation wait until the whole withdrawal succeeds?",
+          "premium": false
+        }
+      ]
+    },
+    {
+      "id": "comprehensive-data-operation-station",
+      "number": 5,
+      "shortTitle": "Operations",
+      "title": "Comprehensive Data Operation Simulation Station",
+      "eyebrow": "Multiple indexes, one truth",
+      "summary": "Finish with systems that combine ranking, editing, lookup, allocation, and lifecycle operations. Design the source of truth first, then make every secondary index agree.",
+      "foundation": "Canonical record + synchronized views",
+      "invariants": ["Each entity has one authoritative lifecycle state", "Every secondary index can be repaired from canonical data", "A multi-step command commits all related index changes together"],
+      "questions": [
+        {
+          "id": 355,
+          "slug": "design-twitter",
+          "title": "Design Twitter",
+          "difficulty": "Medium",
+          "role": "Foundation",
+          "pattern": "Social graph + k-way feed merge",
+          "goal": "Combine follow relationships, append-only posts, and bounded recency queries.",
+          "checkpoint": "Can feed generation avoid sorting every historical post?",
+          "premium": false
+        },
+        {
+          "id": 1500,
+          "slug": "design-a-file-sharing-system",
+          "title": "Design a File Sharing System",
+          "difficulty": "Medium",
+          "role": "Core",
+          "pattern": "Reusable IDs + ownership indexes",
+          "goal": "Track membership, chunk ownership, joins, leaves, and ID reuse.",
+          "checkpoint": "Which indexes must be cleaned when a user leaves?",
+          "premium": true
+        },
+        {
+          "id": 1912,
+          "slug": "design-movie-rental-system",
+          "title": "Design Movie Rental System",
+          "difficulty": "Hard",
+          "role": "Core",
+          "pattern": "Canonical inventory + multiple ordered views",
+          "goal": "Keep availability, rented state, price ordering, and top-five reports synchronized.",
+          "checkpoint": "Can rent/drop update every ordered index without stale entries?",
+          "premium": false
+        },
+        {
+          "id": 2296,
+          "slug": "design-a-text-editor",
+          "title": "Design a Text Editor",
+          "difficulty": "Hard",
+          "role": "Core",
+          "pattern": "Two-sided cursor buffers",
+          "goal": "Support insertion, deletion, and cursor movement without rebuilding all text.",
+          "checkpoint": "What representation makes cursor-local edits cheap?",
+          "premium": false
+        },
+        {
+          "id": 3484,
+          "slug": "design-spreadsheet",
+          "title": "Design Spreadsheet",
+          "difficulty": "Medium",
+          "role": "Checkpoint",
+          "pattern": "Sparse cells + formula parsing",
+          "goal": "Separate cell addressing, sparse storage, reset behavior, and evaluation.",
+          "checkpoint": "Can the parser distinguish literals and cell references cleanly?",
+          "premium": false
+        },
+        {
+          "id": 432,
+          "slug": "all-oone-data-structure",
+          "title": "All O`one Data Structure",
+          "difficulty": "Hard",
+          "role": "Final Boss",
+          "pattern": "Count buckets + key index + linked order",
+          "goal": "Return any minimum/maximum key while every update remains O(1).",
+          "checkpoint": "Can empty count buckets disappear without breaking neighboring buckets?",
+          "premium": false
+        }
+      ]
+    }
+  ]
+}

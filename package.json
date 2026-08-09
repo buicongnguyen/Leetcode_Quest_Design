@@ -1,0 +1,15 @@
+{
+  "name": "leetcode-quest-design",
+  "version": "0.1.0",
+  "private": true,
+  "description": "An interactive quest map for LeetCode system and software design problems.",
+  "type": "module",
+  "scripts": {
+    "build": "node scripts/build-site.mjs",
+    "check": "node scripts/check-site.mjs",
+    "start": "npm run build && node scripts/serve-site.mjs"
+  },
+  "engines": {
+    "node": ">=20"
+  }
+}

@@ -1,0 +1,121 @@
+<!doctype html>
+<html lang="en" data-theme="dark">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="description" content="A five-level quest map for mastering LeetCode system and software design problems.">
+    <meta name="theme-color" content="#08111f">
+    <title>LeetCode Quest — System & Software Design</title>
+    <link rel="stylesheet" href="styles.css">
+    <script src="app.js" type="module"></script>
+  </head>
+  <body>
+    <a class="skip-link" href="#main">Skip to quest map</a>
+    <div class="ambient ambient-a" aria-hidden="true"></div>
+    <div class="ambient ambient-b" aria-hidden="true"></div>
+
+    <header class="topbar">
+      <a class="brand" href="#top" aria-label="LeetCode Quest home">
+        <span class="brand-mark" aria-hidden="true">LQ</span>
+        <span>DESIGN QUEST</span>
+      </a>
+      <nav class="top-actions" aria-label="Site tools">
+        <a class="github-button" href="learn/">Reader</a>
+        <button class="icon-button" id="search-open" type="button" aria-label="Open quest search" title="Search (/)" aria-keyshortcuts="/">⌕</button>
+        <button class="icon-button" id="theme-toggle" type="button" aria-label="Use light theme" title="Change theme" aria-pressed="false">◐</button>
+        <a class="github-button" href="https://github.com/buicongnguyen/Leetcode_Quest_Design" target="_blank" rel="noreferrer">GitHub ↗</a>
+      </nav>
+    </header>
+
+    <main id="main">
+      <section class="hero" id="top">
+        <div class="hero-copy">
+          <p class="kicker"><span></span> LEETCODE SYSTEM & SOFTWARE DESIGN</p>
+          <h1>Build systems.<br><em>Master the state.</em></h1>
+          <p class="hero-summary">A focused quest line through caches, event streams, custom data structures, business rules, and multi-index systems.</p>
+          <div class="hero-actions">
+            <a class="primary-button" href="learn/">Open the reader <span>→</span></a>
+            <a class="secondary-button" href="#quest-map">Explore the map</a>
+            <button class="secondary-button" id="continue-button" type="button">Continue where I left off</button>
+          </div>
+          <dl class="hero-stats" aria-label="Quest statistics">
+            <div><dt id="stat-levels">5</dt><dd>Levels</dd></div>
+            <div><dt id="stat-quests">26</dt><dd>Quests</dd></div>
+            <div><dt id="stat-patterns">15+</dt><dd>Patterns</dd></div>
+          </dl>
+        </div>
+        <div class="hero-console" aria-label="Quest route preview">
+          <div class="console-bar"><span></span><span></span><span></span><code>quest.route</code></div>
+          <div class="route-map" id="route-preview"></div>
+          <div class="console-status"><span class="pulse"></span><code>system.ready()</code><strong>TRUE</strong></div>
+        </div>
+      </section>
+
+      <section class="manifesto" aria-labelledby="manifesto-title">
+        <p class="section-label">THE DESIGN LOOP</p>
+        <h2 id="manifesto-title">Small APIs hide <em>serious architecture.</em></h2>
+        <div class="loop-grid">
+          <article><span>01</span><h3>Model</h3><p>Name the authoritative state before choosing a data structure.</p></article>
+          <article><span>02</span><h3>Protect</h3><p>Write invariants that must survive every public operation.</p></article>
+          <article><span>03</span><h3>Index</h3><p>Add only the secondary views needed to hit the complexity target.</p></article>
+          <article><span>04</span><h3>Prove</h3><p>Trace edge cases, failed commands, cleanup, and amortized cost.</p></article>
+        </div>
+      </section>
+
+      <section class="quest-section" id="quest-map" aria-labelledby="quest-title">
+        <div class="section-heading">
+          <div><p class="section-label">THE QUEST MAP</p><h2 id="quest-title">Five levels. One design language.</h2></div>
+          <div class="progress-summary" aria-live="polite"><strong id="progress-count">0 / 26</strong><span>quests cleared</span><div><i id="progress-bar"></i></div></div>
+        </div>
+        <div class="filter-bar" aria-label="Filter quests">
+          <div class="filter-group" role="group" aria-label="Difficulty">
+            <button class="filter active" type="button" data-difficulty="All">All</button>
+            <button class="filter" type="button" data-difficulty="Easy">Easy</button>
+            <button class="filter" type="button" data-difficulty="Medium">Medium</button>
+            <button class="filter" type="button" data-difficulty="Hard">Hard</button>
+          </div>
+          <label class="premium-filter"><input id="premium-toggle" type="checkbox"> Include Premium</label>
+        </div>
+        <div class="levels" id="levels"></div>
+        <p class="empty-state" id="empty-state" hidden>No quests match this filter.</p>
+      </section>
+
+      <section class="principles" aria-labelledby="principles-title">
+        <div><p class="section-label">BEFORE YOU CODE</p><h2 id="principles-title">A reusable design review.</h2></div>
+        <ol>
+          <li><span>State</span><p>What information is authoritative, derived, or disposable?</p></li>
+          <li><span>Contract</span><p>What does each operation promise on success and failure?</p></li>
+          <li><span>Cost</span><p>Which operation forces the representation choice?</p></li>
+          <li><span>Edge</span><p>What happens at zero capacity, expiry time, duplication, and stale data?</p></li>
+        </ol>
+      </section>
+    </main>
+
+    <footer>
+      <div><span class="brand-mark" aria-hidden="true">LQ</span><p>Original learning map. Problem titles and links belong to LeetCode; this project is not affiliated with or endorsed by LeetCode.</p></div>
+      <p>Built for GitHub Pages · <a href="https://leetcode.com/problemset/" target="_blank" rel="noreferrer">LeetCode Global ↗</a> · <a href="https://leetcode.cn/problemset/" target="_blank" rel="noreferrer">LeetCode China ↗</a></p>
+    </footer>
+
+    <dialog id="quest-dialog" aria-labelledby="dialog-title">
+      <button class="dialog-close" type="button" aria-label="Close quest details">×</button>
+      <p class="dialog-level" id="dialog-level"></p>
+      <div class="dialog-title-row"><span id="dialog-id"></span><h2 id="dialog-title"></h2></div>
+      <div class="dialog-badges" id="dialog-badges"></div>
+      <div class="dialog-grid">
+        <article><span>DESIGN GOAL</span><p id="dialog-goal"></p></article>
+        <article><span>PRIMARY PATTERN</span><p id="dialog-pattern"></p></article>
+        <article class="dialog-checkpoint"><span>REVIEW CHECKPOINT</span><p id="dialog-checkpoint"></p></article>
+      </div>
+      <div class="dialog-actions">
+        <button class="complete-button" id="dialog-complete" type="button"></button>
+        <a id="dialog-global" target="_blank" rel="noreferrer">Open LeetCode ↗</a>
+        <a id="dialog-china" target="_blank" rel="noreferrer">LeetCode 中国 ↗</a>
+      </div>
+    </dialog>
+
+    <dialog id="search-dialog" class="search-dialog" aria-labelledby="search-title">
+      <div class="search-box"><span aria-hidden="true">⌕</span><label id="search-title" class="sr-only" for="search-input">Search quests</label><input id="search-input" type="search" placeholder="Search by title, pattern, or level…" autocomplete="off"><kbd>ESC</kbd></div>
+      <div id="search-results" class="search-results"></div>
+    </dialog>
+  </body>
+</html>
