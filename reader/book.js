@@ -1,10 +1,41 @@
 const THEME_KEY = "leetcode-design-quest-theme";
+const SIDEBAR_SCROLL_KEY = "leetcode-design-reader-sidebar-scroll";
 const menu = document.querySelector("#reader-menu");
+const readerSidebar = document.querySelector("#reader-sidebar");
 const searchDialog = document.querySelector("#reader-search");
 const searchInput = document.querySelector("#reader-search-input");
 const searchResults = document.querySelector("#reader-search-results");
 const themeButton = document.querySelector("#reader-theme");
 let searchIndex = [];
+let sidebarSaveTimer;
+
+function saveSidebarPosition() {
+  try {
+    sessionStorage.setItem(SIDEBAR_SCROLL_KEY, String(readerSidebar.scrollTop));
+  } catch {
+    // Navigation still works when browser storage is unavailable.
+  }
+}
+
+function restoreSidebarPosition() {
+  let savedPosition = null;
+  try {
+    const stored = sessionStorage.getItem(SIDEBAR_SCROLL_KEY);
+    const parsed = Number(stored);
+    if (stored !== null && Number.isFinite(parsed) && parsed >= 0) savedPosition = parsed;
+  } catch {
+    // Fall back to positioning the active page in view.
+  }
+
+  requestAnimationFrame(() => {
+    if (savedPosition !== null) {
+      readerSidebar.scrollTop = savedPosition;
+      return;
+    }
+    const activePage = readerSidebar.querySelector("a.active");
+    if (activePage) readerSidebar.scrollTop = Math.max(0, activePage.offsetTop - readerSidebar.clientHeight / 3);
+  });
+}
 
 function setTheme(value) {
   const theme = ["light", "dark"].includes(value) ? value : "dark";
@@ -47,6 +78,12 @@ menu.addEventListener("click", () => {
   const open = document.body.classList.toggle("menu-open");
   menu.setAttribute("aria-expanded", String(open));
 });
+readerSidebar.addEventListener("scroll", () => {
+  clearTimeout(sidebarSaveTimer);
+  sidebarSaveTimer = setTimeout(saveSidebarPosition, 80);
+}, { passive: true });
+document.querySelectorAll(".book-tree a").forEach(link => link.addEventListener("click", saveSidebarPosition));
+window.addEventListener("pagehide", saveSidebarPosition);
 document.querySelector("#reader-search-open").addEventListener("click", openSearch);
 searchInput.addEventListener("input", event => renderSearch(event.target.value));
 themeButton.addEventListener("click", () => setTheme(document.documentElement.dataset.theme === "dark" ? "light" : "dark"));
@@ -58,4 +95,5 @@ document.addEventListener("keydown", event => {
 });
 
 buildOutline();
+restoreSidebarPosition();
 setTheme(localStorage.getItem(THEME_KEY) || (matchMedia("(prefers-color-scheme: light)").matches ? "light" : "dark"));
