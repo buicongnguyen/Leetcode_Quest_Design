@@ -1,5 +1,5 @@
 import assert from "node:assert/strict";
-import { access, readFile } from "node:fs/promises";
+import { access, readFile, readdir, stat } from "node:fs/promises";
 import path from "node:path";
 import level12Solutions from "../data/solutions/levels-1-2.mjs";
 import level34Solutions from "../data/solutions/levels-3-4.mjs";
@@ -86,10 +86,11 @@ for (const [id, guide] of Object.entries(guides.quests)) {
 }
 for (const file of ["index.html", "styles.css", "app.js"]) await access(path.join(root, "site", file));
 for (const required of ["Skip to quest map", "aria-live=", "quest-dialog", "search-dialog", "theme-toggle", "dialog-outcome", "dialog-edge-case"]) assert.ok(html.includes(required), `Missing accessible UI contract: ${required}`);
+assert.ok(html.includes('id="premium-toggle" type="checkbox" checked'), "All quests, including Premium quests, must be visible on first load");
 for (const atlasNavigation of ["atlas-sidebar", "atlas-tree", "ATLAS CONTENTS"]) assert.ok(html.includes(atlasNavigation), `Missing atlas contents navigation: ${atlasNavigation}`);
 assert.ok(css.includes("@media (max-width: 680px)"), "Mobile layout is missing");
 assert.ok(css.includes("prefers-reduced-motion"), "Reduced-motion support is missing");
-for (const behavior of ["localStorage", "showModal", "data-difficulty", "leetcode.cn/problems", "leetcode.com/problems", "guides.json", "guide.outcomes", "guide.edgeCases"]) assert.ok(js.includes(behavior), `Missing interaction: ${behavior}`);
+for (const behavior of ["localStorage", "showModal", "data-difficulty", "leetcode.cn/problems", "leetcode.com/problems", "guides.json", "guide.outcomes", "guide.edgeCases", "includePremium: true"]) assert.ok(js.includes(behavior), `Missing interaction: ${behavior}`);
 for (const readerBehavior of ["IntersectionObserver", "search-index.json", "reader-menu", "localStorage", "sessionStorage", "SIDEBAR_SCROLL_KEY", "readerSidebar.scrollTop", "CODE_LANGUAGE_KEY", "data-code-tabs", "ArrowRight", "data-copy-code"]) assert.ok(bookJs.includes(readerBehavior), `Missing reader interaction: ${readerBehavior}`);
 assert.ok(bookCss.includes(".book-tree"), "Nested reader tree is missing");
 for (const solutionStyle of [".tree-subpage", ".structure-graph", ".complexity-chart", ".code-workbench", ".language-tabs", ".prerequisite-grid", ".learning-contract", ".wrong-turn-grid", ".test-plan", ".followup-grid"]) assert.ok(bookCss.includes(solutionStyle), `Missing enriched reader style: ${solutionStyle}`);
@@ -101,4 +102,62 @@ for (const solutionContract of ["level-5.mjs", "-solution.html", "Editorial Solu
 for (const guideContract of ["guides.mjs", "three-page learning cycle", "Before this chapter", "Learning contract", "Reject the common wrong turns", "Write tests before code", "Interview follow-ups"]) assert.ok(buildScript.includes(guideContract), `Enriched content contract is missing: ${guideContract}`);
 for (const atlasSolutionLink of ["dialog-overview", "dialog-thinking", "dialog-solution", "-solution.html"]) assert.ok(html.includes(atlasSolutionLink) || js.includes(atlasSolutionLink), `Atlas is missing solution navigation: ${atlasSolutionLink}`);
 
-console.log(`Static checks passed: ${data.levels.length} enriched chapters and ${questions.length} complete quest learning sets.`);
+const dist = path.join(root, "dist");
+const reader = path.join(dist, "en", "learn");
+const expectedReaderFiles = [
+  "index.html",
+  ...data.levels.map(level => `level-${level.number}.html`),
+  ...questions.flatMap(question => [
+    `${question.slug}.html`,
+    `${question.slug}-thinking.html`,
+    `${question.slug}-solution.html`
+  ])
+];
+assert.equal(expectedReaderFiles.length, 84, "The reader must contain 84 indexed learning pages");
+for (const file of expectedReaderFiles) await access(path.join(reader, file));
+
+const searchIndex = JSON.parse(await readFile(path.join(reader, "search-index.json"), "utf8"));
+assert.equal(searchIndex.length, expectedReaderFiles.length, "Search must index every reader page exactly once");
+assert.equal(new Set(searchIndex.map(entry => entry.href)).size, searchIndex.length, "Search-index routes must be unique");
+assert.deepEqual(searchIndex.map(entry => entry.href).sort(), expectedReaderFiles.toSorted(), "Search-index coverage must match the generated reader");
+assert.ok(searchIndex.every(entry => entry.title && entry.section && entry.text), "Every search entry needs a title, section, and searchable content");
+
+async function htmlFiles(directory) {
+  const files = [];
+  for (const entry of await readdir(directory, { withFileTypes: true })) {
+    const target = path.join(directory, entry.name);
+    if (entry.isDirectory()) files.push(...await htmlFiles(target));
+    else if (entry.name.endsWith(".html")) files.push(target);
+  }
+  return files;
+}
+
+const brokenLinks = [];
+const generatedHtml = await htmlFiles(dist);
+for (const file of generatedHtml) {
+  const document = await readFile(file, "utf8");
+  for (const match of document.matchAll(/(?:href|src)="([^"]+)"/g)) {
+    const raw = match[1];
+    const localUrl = raw.split(/[?#]/, 1)[0];
+    if (!localUrl || /^(?:https?:|mailto:|data:|javascript:)/.test(localUrl)) continue;
+    let target;
+    if (localUrl.startsWith("/Leetcode_Quest_Design/")) target = path.join(dist, localUrl.slice("/Leetcode_Quest_Design/".length));
+    else if (localUrl.startsWith("/")) {
+      brokenLinks.push(`${path.relative(dist, file)} -> ${localUrl} (invalid Pages-root route)`);
+      continue;
+    } else target = path.resolve(path.dirname(file), localUrl);
+    if (!target.startsWith(dist)) {
+      brokenLinks.push(`${path.relative(dist, file)} -> ${localUrl} (escapes dist)`);
+      continue;
+    }
+    try {
+      const targetStat = await stat(target);
+      if (targetStat.isDirectory()) await access(path.join(target, "index.html"));
+    } catch {
+      brokenLinks.push(`${path.relative(dist, file)} -> ${localUrl}`);
+    }
+  }
+}
+assert.deepEqual(brokenLinks, [], `Generated site has broken local links:\n${brokenLinks.join("\n")}`);
+
+console.log(`Checks passed: ${data.levels.length} enriched chapters, ${questions.length} complete quest learning sets, ${expectedReaderFiles.length} search entries, and ${generatedHtml.length} linked HTML pages.`);

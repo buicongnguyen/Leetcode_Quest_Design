@@ -5,7 +5,7 @@ const state = {
   data: null,
   guides: null,
   difficulty: "All",
-  includePremium: false,
+  includePremium: true,
   completed: loadCompleted(),
   activeQuest: null
 };
@@ -76,6 +76,7 @@ function renderAtlasTree() {
 function renderLevels() {
   const visibleLevels = state.data.levels.map(level => ({
     ...level,
+    totalQuestions: level.questions.length,
     questions: level.questions.filter(question =>
       (state.difficulty === "All" || question.difficulty === state.difficulty) &&
       (state.includePremium || !question.premium)
@@ -87,7 +88,7 @@ function renderLevels() {
       <button class="level-header" type="button" aria-expanded="${index === 0}" aria-controls="body-${level.id}">
         <span class="level-number">L0${level.number}</span>
         <span class="level-heading"><h3>${level.title}</h3><p>${level.eyebrow}</p></span>
-        <span class="level-meta">${level.questions.length} quests <i>＋</i></span>
+        <span class="level-meta">${level.questions.length === level.totalQuestions ? level.questions.length : `${level.questions.length} of ${level.totalQuestions}`} quests <i>＋</i></span>
       </button>
       <div class="level-body" id="body-${level.id}">
         <div class="level-intro">
