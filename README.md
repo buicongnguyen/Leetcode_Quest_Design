@@ -40,6 +40,11 @@ Every level repeats the same design method: identify the authoritative state, wr
 - A problem-specific **Flow of Thinking** child page for every quest, deriving the solution from input operations, bottlenecks, data-structure decisions, combined architecture, and complexity proof.
 - A learning contract, edge-case lab, wrong-turn review, alternative-design tradeoff, and pre-code test plan for every quest.
 - An original **Editorial Solution** child page for every quest, with input/output analysis, an example trace, data-structure diagram, complexity graph, pseudocode, proof, and complete Python3/C++ tabs.
+- Attempt-first practice states shared across each quest's overview, thinking flow, solution, and atlas completion.
+- A three-stage hint ladder and keyboard-operable interactive trace lab for every quest.
+- Independent contract cards for all Premium quests, plus adversarial and language-specific reviews for every Hard or Boss quest.
+- Pattern comparison tables and synthesis assessments with hidden rubrics for every chapter.
+- Behavioral execution of all 26 Python solutions and equivalent generated C++20 tests in CI.
 - Difficulty and Premium filters.
 - Search by problem, level, or design pattern.
 - Detailed design goals and review checkpoints without reproducing LeetCode problem statements or editorials.
@@ -49,7 +54,7 @@ Every level repeats the same design method: identify the authoritative state, wr
 
 ## Run locally
 
-Node.js 20 or newer is required.
+Node.js 20 or newer and Python 3 are required. A C++20 compiler such as `g++` or `clang++` enables the same C++ verification that CI requires.
 
 ```bash
 npm run check
@@ -72,7 +77,7 @@ See [CONTRIBUTING.md](CONTRIBUTING.md) for the quest-entry schema and review che
 
 The generated route structure and content architecture are documented in [SITE.md](SITE.md).
 
-The chapter-by-chapter and quest-by-quest evaluation is documented in [CONTENT_AUDIT.md](CONTENT_AUDIT.md).
+The current content evaluation is documented in [CONTENT_AUDIT.md](CONTENT_AUDIT.md), and the completed second-edition release plan is documented in [SECOND_EDITION_PLAN.md](SECOND_EDITION_PLAN.md).
 
 ## License
 

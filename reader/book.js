@@ -1,6 +1,8 @@
 const THEME_KEY = "leetcode-design-quest-theme";
 const SIDEBAR_SCROLL_KEY = "leetcode-design-reader-sidebar-scroll";
 const CODE_LANGUAGE_KEY = "leetcode-design-reader-code-language";
+const PRACTICE_STATE_KEY = "leetcode-design-reader-practice-v2";
+const ATLAS_PROGRESS_KEY = "leetcode-design-quest-progress-v1";
 const menu = document.querySelector("#reader-menu");
 const readerSidebar = document.querySelector("#reader-sidebar");
 const searchDialog = document.querySelector("#reader-search");
@@ -109,6 +111,84 @@ function setupCodeWorkbenches() {
   });
 }
 
+function loadPracticeStates() {
+  try {
+    const value = JSON.parse(localStorage.getItem(PRACTICE_STATE_KEY) || "{}");
+    return value && typeof value === "object" && !Array.isArray(value) ? value : {};
+  } catch {
+    return {};
+  }
+}
+
+function savePracticeState(questId, value) {
+  const states = loadPracticeStates();
+  if (value === "not-started") delete states[questId];
+  else states[questId] = value;
+  localStorage.setItem(PRACTICE_STATE_KEY, JSON.stringify(states));
+
+  let completed = [];
+  try {
+    const parsed = JSON.parse(localStorage.getItem(ATLAS_PROGRESS_KEY) || "[]");
+    if (Array.isArray(parsed)) completed = parsed.filter(Number.isInteger);
+  } catch {
+    completed = [];
+  }
+  const completedIds = new Set(completed);
+  if (["solved", "reviewed"].includes(value)) completedIds.add(Number(questId));
+  else completedIds.delete(Number(questId));
+  localStorage.setItem(ATLAS_PROGRESS_KEY, JSON.stringify([...completedIds]));
+}
+
+function setupPracticeStatuses() {
+  const labels = { "not-started": "Not started", attempted: "Attempted", solved: "Solved", reviewed: "Reviewed" };
+  const states = loadPracticeStates();
+  document.querySelectorAll("[data-practice-status]").forEach(group => {
+    const questId = group.dataset.questId;
+    const label = group.querySelector("[data-practice-label]");
+    const live = group.querySelector("[data-practice-live]");
+    const buttons = [...group.querySelectorAll("[data-practice-value]")];
+    const render = value => {
+      const safeValue = labels[value] ? value : "not-started";
+      label.textContent = labels[safeValue];
+      group.dataset.currentPractice = safeValue;
+      buttons.forEach(button => button.setAttribute("aria-pressed", String(button.dataset.practiceValue === safeValue)));
+      return safeValue;
+    };
+    render(states[questId] || "not-started");
+    buttons.forEach(button => button.addEventListener("click", () => {
+      const value = render(button.dataset.practiceValue);
+      savePracticeState(questId, value);
+      live.textContent = `Practice state changed to ${labels[value]}.`;
+    }));
+  });
+}
+
+function setupTraceLabs() {
+  document.querySelectorAll("[data-trace-lab]").forEach(lab => {
+    const steps = [...lab.querySelectorAll("[data-trace-step]")];
+    const label = lab.querySelector("[data-trace-position]");
+    const previous = lab.querySelector("[data-trace-previous]");
+    const next = lab.querySelector("[data-trace-next]");
+    const reset = lab.querySelector("[data-trace-reset]");
+    let index = 0;
+    const render = value => {
+      index = Math.max(0, Math.min(steps.length - 1, value));
+      steps.forEach((step, stepIndex) => { step.hidden = stepIndex !== index; });
+      label.textContent = `Step ${index + 1} of ${steps.length}`;
+      previous.disabled = index === 0;
+      next.disabled = index === steps.length - 1;
+    };
+    previous.addEventListener("click", () => render(index - 1));
+    next.addEventListener("click", () => render(index + 1));
+    reset.addEventListener("click", () => render(0));
+    lab.addEventListener("keydown", event => {
+      if (event.key === "ArrowLeft") { event.preventDefault(); render(index - 1); }
+      if (event.key === "ArrowRight") { event.preventDefault(); render(index + 1); }
+    });
+    render(0);
+  });
+}
+
 function renderSearch(query) {
   const value = query.trim().toLowerCase();
   const matches = searchIndex.filter(item => !value || `${item.title} ${item.section} ${item.text}`.toLowerCase().includes(value)).slice(0, 12);
@@ -146,4 +226,6 @@ document.addEventListener("keydown", event => {
 buildOutline();
 restoreSidebarPosition();
 setupCodeWorkbenches();
+setupPracticeStatuses();
+setupTraceLabs();
 setTheme(localStorage.getItem(THEME_KEY) || (matchMedia("(prefers-color-scheme: light)").matches ? "light" : "dark"));

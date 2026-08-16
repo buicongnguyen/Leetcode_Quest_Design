@@ -6,7 +6,7 @@
   "type": "module",
   "scripts": {
     "build": "node scripts/build-site.mjs",
-    "check": "npm run build && node scripts/check-site.mjs",
+    "check": "npm run build && node scripts/check-site.mjs && node scripts/verify-solutions.mjs",
     "start": "npm run build && node scripts/serve-site.mjs"
   },
   "engines": {

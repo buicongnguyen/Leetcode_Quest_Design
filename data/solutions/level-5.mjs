@@ -104,7 +104,12 @@ class Twitter:
 
     def unfollow(self, followerId: int, followeeId: int) -> None:
         self.following[followerId].discard(followeeId)`,
-    cpp: `#include <bits/stdc++.h>
+    cpp: `#include <queue>
+#include <tuple>
+#include <unordered_map>
+#include <unordered_set>
+#include <utility>
+#include <vector>
 using namespace std;
 
 class Twitter {
@@ -259,7 +264,12 @@ class FileSharing:
             self.chunk_to_users[chunkID].add(userID)
             self.user_to_chunks[userID].add(chunkID)
         return answer`,
-    cpp: `#include <bits/stdc++.h>
+    cpp: `#include <algorithm>
+#include <functional>
+#include <queue>
+#include <unordered_map>
+#include <unordered_set>
+#include <vector>
 using namespace std;
 
 class FileSharing {
@@ -439,7 +449,12 @@ class MovieRentingSystem:
         for record in chosen:
             heapq.heappush(self.rented_heap, record)
         return [[shop, movie] for _, shop, movie, _ in chosen]`,
-    cpp: `#include <bits/stdc++.h>
+    cpp: `#include <functional>
+#include <queue>
+#include <tuple>
+#include <unordered_map>
+#include <unordered_set>
+#include <vector>
 using namespace std;
 
 class MovieRentingSystem {
@@ -614,7 +629,8 @@ cursorRight(k):
         for _ in range(min(k, len(self.right))):
             self.left.append(self.right.pop())
         return ''.join(self.left[-10:])`,
-    cpp: `#include <bits/stdc++.h>
+    cpp: `#include <algorithm>
+#include <string>
 using namespace std;
 
 class TextEditor {
@@ -743,7 +759,10 @@ getValue(formula):
     def getValue(self, formula: str) -> int:
         left, right = formula[1:].split('+')
         return self._value(left) + self._value(right)`,
-    cpp: `#include <bits/stdc++.h>
+    cpp: `#include <cctype>
+#include <string>
+#include <utility>
+#include <vector>
 using namespace std;
 
 class Spreadsheet {
@@ -916,7 +935,11 @@ class AllOne:
         if self.head.next is self.tail:
             return ''
         return next(iter(self.head.next.keys))`,
-    cpp: `#include <bits/stdc++.h>
+    cpp: `#include <iterator>
+#include <list>
+#include <string>
+#include <unordered_map>
+#include <unordered_set>
 using namespace std;
 
 class AllOne {

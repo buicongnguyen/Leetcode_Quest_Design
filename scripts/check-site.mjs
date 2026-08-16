@@ -5,6 +5,8 @@ import level12Solutions from "../data/solutions/levels-1-2.mjs";
 import level34Solutions from "../data/solutions/levels-3-4.mjs";
 import level5Solutions from "../data/solutions/level-5.mjs";
 import guides from "../data/guides.mjs";
+import edition from "../data/edition.mjs";
+import verification from "../data/verification.mjs";
 
 const root = path.resolve(import.meta.dirname, "..");
 const data = JSON.parse(await readFile(path.join(root, "data", "quests.json"), "utf8"));
@@ -40,6 +42,10 @@ assert.deepEqual(Object.keys(thinking).map(Number).sort((a, b) => a - b), questi
 assert.deepEqual(Object.keys(solutions).map(Number).sort((a, b) => a - b), questions.map(question => question.id).sort((a, b) => a - b), "Every quest must have exactly one editorial solution");
 assert.deepEqual(Object.keys(guides.chapters).map(Number).sort((a, b) => a - b), data.levels.map(level => level.number), "Every chapter must have exactly one teaching guide");
 assert.deepEqual(Object.keys(guides.quests).map(Number).sort((a, b) => a - b), questions.map(question => question.id).sort((a, b) => a - b), "Every quest must have exactly one learning guide");
+assert.deepEqual(Object.keys(edition.chapters).map(Number).sort((a, b) => a - b), data.levels.map(level => level.number), "Every chapter must have one second-edition practice guide");
+assert.deepEqual(Object.keys(verification).map(Number).sort((a, b) => a - b), questions.map(question => question.id).sort((a, b) => a - b), "Every quest must have exactly one executable verification trace");
+assert.deepEqual(Object.keys(edition.premiumContracts).map(Number).sort((a, b) => a - b), questions.filter(question => question.premium).map(question => question.id).sort((a, b) => a - b), "Every Premium quest must have an independent contract card");
+assert.deepEqual(Object.keys(edition.advanced).map(Number).sort((a, b) => a - b), questions.filter(question => question.difficulty === "Hard" || question.role.includes("Boss")).map(question => question.id).sort((a, b) => a - b), "Every Hard or Boss quest must have an advanced review");
 for (const level of data.levels) {
   assert.ok(level.title && level.summary && level.foundation, `${level.id} is missing learning context`);
   assert.ok(level.invariants.length >= 3, `${level.id} needs at least three invariants`);
@@ -48,6 +54,9 @@ for (const level of data.levels) {
   assert.ok(guide.failureModes.length >= 3 && guide.practiceProtocol.length >= 4 && guide.bridge, `${level.id} needs failure modes, practice protocol, and a bridge`);
   assert.deepEqual(guide.progression.map(item => item.id), level.questions.map(question => question.id), `${level.id} progression must cover quests in exact chapter order`);
   assert.ok(guide.progression.every(item => item.lesson), `${level.id} progression needs a lesson for every quest`);
+  const editionChapter = edition.chapters[String(level.number)];
+  assert.ok(editionChapter.comparison.length >= 3 && editionChapter.comparison.every(row => row.decision && row.choose && row.avoid), `${level.id} needs a complete pattern comparison`);
+  assert.ok(editionChapter.assessment.length >= 3 && editionChapter.assessment.every(item => item.prompt && item.rubric.length >= 3), `${level.id} needs a three-part chapter assessment`);
 }
 for (const question of questions) {
   assert.ok(Number.isInteger(question.id) && question.id > 0, "Quest ID must be a positive integer");
@@ -84,6 +93,16 @@ for (const [id, guide] of Object.entries(guides.quests)) {
   assert.ok(guide.tests.length >= 3 && guide.tests.every(test => test.name && test.scenario && test.expectation), `Quest guide ${id} needs a complete pre-code test plan`);
   assert.ok(guide.followUps.length >= 2, `Quest guide ${id} needs interview follow-ups`);
 }
+for (const [id, spec] of Object.entries(verification)) {
+  assert.equal(spec.className, interfaces[id][0], `Verification ${id} uses the wrong class name`);
+  assert.equal(spec.constructor.types.length, spec.constructor.args.length, `Verification ${id} constructor types and arguments differ`);
+  assert.ok(spec.calls.length >= 5, `Verification ${id} needs a meaningful behavioral trace`);
+  for (const entry of spec.calls) {
+    const method = spec.methods[entry.method];
+    assert.ok(method, `Verification ${id} calls unknown method ${entry.method}`);
+    assert.equal(method.types.length, entry.args.length, `Verification ${id} has a type mismatch for ${entry.method}`);
+  }
+}
 for (const file of ["index.html", "styles.css", "app.js"]) await access(path.join(root, "site", file));
 for (const required of ["Skip to quest map", "aria-live=", "quest-dialog", "search-dialog", "theme-toggle", "dialog-outcome", "dialog-edge-case"]) assert.ok(html.includes(required), `Missing accessible UI contract: ${required}`);
 assert.ok(html.includes('id="premium-toggle" type="checkbox" checked'), "All quests, including Premium quests, must be visible on first load");
@@ -91,15 +110,16 @@ for (const atlasNavigation of ["atlas-sidebar", "atlas-tree", "ATLAS CONTENTS"])
 assert.ok(css.includes("@media (max-width: 680px)"), "Mobile layout is missing");
 assert.ok(css.includes("prefers-reduced-motion"), "Reduced-motion support is missing");
 for (const behavior of ["localStorage", "showModal", "data-difficulty", "leetcode.cn/problems", "leetcode.com/problems", "guides.json", "guide.outcomes", "guide.edgeCases", "includePremium: true"]) assert.ok(js.includes(behavior), `Missing interaction: ${behavior}`);
-for (const readerBehavior of ["IntersectionObserver", "search-index.json", "reader-menu", "localStorage", "sessionStorage", "SIDEBAR_SCROLL_KEY", "readerSidebar.scrollTop", "CODE_LANGUAGE_KEY", "data-code-tabs", "ArrowRight", "data-copy-code"]) assert.ok(bookJs.includes(readerBehavior), `Missing reader interaction: ${readerBehavior}`);
+for (const readerBehavior of ["IntersectionObserver", "search-index.json", "reader-menu", "localStorage", "sessionStorage", "SIDEBAR_SCROLL_KEY", "readerSidebar.scrollTop", "CODE_LANGUAGE_KEY", "data-code-tabs", "ArrowRight", "data-copy-code", "PRACTICE_STATE_KEY", "setupPracticeStatuses", "setupTraceLabs"]) assert.ok(bookJs.includes(readerBehavior), `Missing reader interaction: ${readerBehavior}`);
 assert.ok(bookCss.includes(".book-tree"), "Nested reader tree is missing");
-for (const solutionStyle of [".tree-subpage", ".structure-graph", ".complexity-chart", ".code-workbench", ".language-tabs", ".prerequisite-grid", ".learning-contract", ".wrong-turn-grid", ".test-plan", ".followup-grid"]) assert.ok(bookCss.includes(solutionStyle), `Missing enriched reader style: ${solutionStyle}`);
+for (const solutionStyle of [".tree-subpage", ".structure-graph", ".complexity-chart", ".code-workbench", ".language-tabs", ".prerequisite-grid", ".learning-contract", ".wrong-turn-grid", ".test-plan", ".followup-grid", ".practice-status", ".trace-lab", ".premium-contract", ".chapter-assessment", ".language-review"]) assert.ok(bookCss.includes(solutionStyle), `Missing enriched reader style: ${solutionStyle}`);
 assert.ok(bookCss.includes("grid-template-columns:280px minmax(0,1fr) 240px"), "Reader columns must span from the left edge to the right edge");
 const buildScript = await readFile(path.join(root, "scripts", "build-site.mjs"), "utf8");
 for (const readerRoute of ["en", "learn", "level-${level.number}.html", "search-index.json"]) assert.ok(buildScript.includes(readerRoute), `Reader build route is missing: ${readerRoute}`);
 for (const thinkingContract of ["thinking.json", "-thinking.html", "Flow of Thinking", "operation-table"]) assert.ok(buildScript.includes(thinkingContract), `Thinking-page build contract is missing: ${thinkingContract}`);
 for (const solutionContract of ["level-5.mjs", "-solution.html", "Editorial Solution", "structureDiagram", "codeWorkbench", "role=\"tab\"", "aria-current=\"page\""]) assert.ok(buildScript.includes(solutionContract), `Solution-page build contract is missing: ${solutionContract}`);
 for (const guideContract of ["guides.mjs", "three-page learning cycle", "Before this chapter", "Learning contract", "Reject the common wrong turns", "Write tests before code", "Interview follow-ups"]) assert.ok(buildScript.includes(guideContract), `Enriched content contract is missing: ${guideContract}`);
+for (const editionContract of ["edition.mjs", "practiceStatus", "hintLadder", "traceLab", "premiumContract", "advancedReview", "chapterPractice"]) assert.ok(buildScript.includes(editionContract), `Second-edition build contract is missing: ${editionContract}`);
 for (const atlasSolutionLink of ["dialog-overview", "dialog-thinking", "dialog-solution", "-solution.html"]) assert.ok(html.includes(atlasSolutionLink) || js.includes(atlasSolutionLink), `Atlas is missing solution navigation: ${atlasSolutionLink}`);
 
 const dist = path.join(root, "dist");

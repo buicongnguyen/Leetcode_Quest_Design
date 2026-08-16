@@ -17,6 +17,14 @@ Do not copy a problem statement, example, editorial, company tag, or solution fr
 
 Every quest also needs a complete entry in `data/guides.mjs`: chapter placement, prerequisites, measurable outcomes, edge cases, common mistakes, one alternative with a use case and tradeoff, three pre-code tests, and at least two interview follow-ups. Chapter guides in the same file must cover prerequisites, outcomes, quest progression, recurring failure modes, practice protocol, and the bridge to the next stage.
 
+`data/verification.mjs` must contain a constructor and behavioral operation trace for the quest. The trace is executed directly against both submitted languages. Use `approx(value)` for floating-point output and `oneOf(...)` only when the API explicitly permits nondeterministic output.
+
+`data/edition.mjs` owns the attempt-first teaching extensions:
+
+- every chapter needs three pattern-comparison decisions and three assessment prompts with rubrics;
+- every Premium quest needs an independently worded contract card;
+- every Hard or Boss quest needs an adversarial trace, Python note, C++ note, and production extension.
+
 ## Choose the right level
 
 - **Level 1:** eviction, cache-like ordering, bounded ownership, or lazy state.
@@ -32,4 +40,4 @@ npm run check
 npm run build
 ```
 
-The checks reject duplicate IDs/slugs, incomplete chapter/quest guide coverage, incomplete thinking or solution coverage, invalid difficulties, missing editorial fields, malformed diagrams, undersized code submissions, and broken core UI contracts.
+The checks reject duplicate IDs/slugs, incomplete chapter/quest/edition coverage, missing behavioral traces, invalid difficulties, missing editorial fields, malformed diagrams, undersized code submissions, broken links, incomplete search coverage, and broken core UI contracts. Python behavior runs locally; CI additionally requires C++20 compilation and execution for every quest.
