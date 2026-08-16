@@ -231,6 +231,67 @@ kbd { border: 1px solid var(--line); border-radius: .3rem; color: var(--muted); 
   .dialog-grid { grid-template-columns: 1fr; }.dialog-checkpoint { grid-column: auto; }dialog { padding: 1.25rem; }
 }
 
+/* Compact atlas density: shorten repeated sections and rows without shrinking touch targets. */
+.topbar { min-height: 68px; }
+.atlas-sidebar { padding: 1.25rem .8rem; }
+.atlas-sidebar-label { margin-bottom: .65rem; }
+.atlas-tree { gap: .14rem; }
+.atlas-tree a { min-height: 38px; padding: .42rem .55rem; }
+.atlas-reader-link { gap: .3rem; margin-top: .85rem; padding: .75rem .6rem; }
+.hero { min-height: 560px; padding: 58px 0 68px; gap: 6vw; }
+.kicker, .section-label { margin-bottom: .85rem; }
+.hero-summary { margin-top: 1.25rem; line-height: 1.62; }
+.hero-actions { margin-top: 1.25rem; }
+.hero-stats { margin-top: 1.8rem; gap: 2.8rem; }
+.console-bar { height: 44px; }
+.route-map { padding: 1rem 1.25rem; }
+.route-node { min-height: 58px; }
+.route-node:not(:last-child)::after { height: 22px; top: 49px; }
+.console-status { min-height: 44px; }
+.manifesto, .quest-section, .principles { padding-block: 76px; }
+.loop-grid { margin-top: 2.2rem; }
+.loop-grid article { min-height: 170px; padding: 1.15rem; }
+.loop-grid h3 { margin: 2.6rem 0 .5rem; }
+.loop-grid p { line-height: 1.55; }
+.filter-bar { margin: 2rem 0 1.25rem; min-height: 52px; padding: .4rem; }
+.levels { gap: .7rem; }
+.level-header { padding: 1rem 1.2rem; }
+.level-body { padding: 0 1.2rem 1.2rem; }
+.level-intro { padding: 1rem 0; gap: 2rem; }
+.level-intro > p { line-height: 1.58; }
+.quest-list { gap: .55rem; }
+.quest-card { min-height: 148px; padding: .85rem; gap: .6rem; }
+.quest-card h4 { margin: .15rem 0 .3rem; }
+.quest-card p { line-height: 1.45; }
+.principles { gap: 7vw; }
+.principles li { grid-template-columns: 100px 1fr; padding: .9rem 0; }
+footer { min-height: 125px; }
+dialog { padding: 1.35rem; }
+.dialog-title-row h2 { margin: .35rem 0 .65rem; }
+.dialog-grid { margin: 1rem 0; gap: .55rem; }
+.dialog-grid article { padding: .75rem; }
+.dialog-grid p { margin-top: .4rem; line-height: 1.45; }
+.search-box { min-height: 56px; }
+.search-result { padding: .62rem .7rem; }
+
+@media (max-width: 900px) {
+  .atlas-sidebar { padding: .45rem 12px; }
+}
+
+@media (max-width: 680px) {
+  .hero { padding: 42px 0 54px; gap: 2.5rem; }
+  .hero-stats { margin-top: 1.4rem; }
+  .manifesto, .quest-section, .principles { padding: 54px 14px; }
+  .loop-grid article { min-height: 145px; }
+  .loop-grid h3 { margin-top: 1.7rem; }
+  .filter-bar { margin-top: 1.5rem; }
+  .level-header { padding: .85rem; }
+  .level-body { padding: 0 .85rem .85rem; }
+  .quest-card { min-height: auto; }
+  .principles li { grid-template-columns: 68px 1fr; padding: .75rem 0; }
+  footer { min-height: auto; }
+}
+
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after { scroll-behavior: auto !important; transition-duration: .01ms !important; animation-duration: .01ms !important; animation-iteration-count: 1 !important; }
 }
